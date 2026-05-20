@@ -247,6 +247,125 @@
             line-height: 1.6;
         }
 
+        /* 问题列表区域 */
+        .issue-list-section {
+            margin-top: var(--spacing-lg);
+        }
+
+        .issue-table-wrapper {
+            overflow-x: auto;
+            margin-top: var(--spacing-md);
+        }
+
+        .issue-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 12px;
+        }
+
+        .issue-table thead {
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .issue-table th {
+            padding: var(--spacing-sm) var(--spacing-md);
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--bg-border);
+            white-space: nowrap;
+        }
+
+        .issue-table tbody tr {
+            background: rgba(0, 0, 0, 0.2);
+            transition: background 0.3s ease;
+        }
+
+        .issue-table tbody tr:hover {
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .issue-table td {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .issue-id {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .issue-desc {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .issue-owner {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .issue-date {
+            color: rgba(255, 255, 255, 0.6);
+            font-family: monospace;
+        }
+
+        /* 问题类型标签 */
+        .issue-type {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .type-tech {
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--primary-color);
+        }
+
+        .type-coord {
+            background: rgba(255, 159, 67, 0.15);
+            color: #ff9f43;
+        }
+
+        .type-change {
+            background: rgba(156, 39, 176, 0.15);
+            color: #ce93d8;
+        }
+
+        /* 状态标签 */
+        .issue-status {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-processing {
+            background: rgba(255, 159, 67, 0.2);
+            color: #ff9f43;
+        }
+
+        .status-pending {
+            background: rgba(255, 77, 79, 0.2);
+            color: #ff4d4f;
+        }
+
+        .status-evaluating {
+            background: rgba(156, 39, 176, 0.2);
+            color: #ce93d8;
+        }
+
+        .status-resolved {
+            background: rgba(0, 255, 136, 0.15);
+            color: #00ff88;
+        }
+
         /* ===== 中间列 ===== */
         .center-column {
             display: flex;
@@ -552,6 +671,61 @@
             </div>
 
         </main>
+
+        <!-- ====== 问题列表区域 ====== -->
+        <section class="issue-list-section">
+            <div class="card">
+                <div class="card-title">问题闭环&协同督办</div>
+                <div class="issue-table-wrapper">
+                    <table class="issue-table">
+                        <thead>
+                            <tr>
+                                <th>问题编号</th>
+                                <th>问题类型</th>
+                                <th>问题描述</th>
+                                <th>责任方</th>
+                                <th>状态</th>
+                                <th>截止日期</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="issue-id">ISS-001</td>
+                                <td><span class="issue-type type-tech">技术问题</span></td>
+                                <td class="issue-desc">数据库性能优化方案待确认</td>
+                                <td class="issue-owner">承建方技术部</td>
+                                <td><span class="issue-status status-processing">处理中</span></td>
+                                <td class="issue-date">2026-05-25</td>
+                            </tr>
+                            <tr>
+                                <td class="issue-id">ISS-002</td>
+                                <td><span class="issue-type type-coord">协调问题</span></td>
+                                <td class="issue-desc">机房网络改造协调</td>
+                                <td class="issue-owner">甲方基建部</td>
+                                <td><span class="issue-status status-pending">待处理</span></td>
+                                <td class="issue-date">2026-05-30</td>
+                            </tr>
+                            <tr>
+                                <td class="issue-id">ISS-003</td>
+                                <td><span class="issue-type type-change">需求变更</span></td>
+                                <td class="issue-desc">增加移动端功能模块</td>
+                                <td class="issue-owner">双方评审</td>
+                                <td><span class="issue-status status-evaluating">评估中</span></td>
+                                <td class="issue-date">2026-06-10</td>
+                            </tr>
+                            <tr>
+                                <td class="issue-id">ISS-004</td>
+                                <td><span class="issue-type type-tech">技术问题</span></td>
+                                <td class="issue-desc">第三方接口联调异常</td>
+                                <td class="issue-owner">承建方</td>
+                                <td><span class="issue-status status-resolved">已解决</span></td>
+                                <td class="issue-date">2026-05-18</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
