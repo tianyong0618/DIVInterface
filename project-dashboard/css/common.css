@@ -115,10 +115,11 @@ html, body {
 .header {
     position: relative;
     z-index: 10;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-md) var(--spacing-xl);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: var(--spacing-md) var(--spacing-xl);
+    padding: var(--spacing-lg) var(--spacing-xl);
     margin-bottom: var(--spacing-lg);
     background: linear-gradient(180deg, 
         rgba(0, 212, 255, 0.08) 0%, 
@@ -144,13 +145,12 @@ html, body {
 .header-title {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
 }
 
 .header-title h1 {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 600;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     background: linear-gradient(90deg, var(--primary-color), #ffffff, var(--warning-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -161,6 +161,23 @@ html, body {
     display: flex;
     gap: var(--spacing-xl);
     font-size: 13px;
+    align-items: center;
+}
+
+.header-info-left {
+    display: flex;
+    gap: var(--spacing-xl);
+}
+
+.header-info-right {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.header-alert {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .header-info-item {
