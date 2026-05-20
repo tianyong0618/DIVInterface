@@ -64,6 +64,44 @@
             letter-spacing: 1px;
         }
 
+        /* ===== AI智能结论 ===== */
+        .ai-conclusion {
+            grid-column: 1 / -1;
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: linear-gradient(180deg,
+                rgba(255, 165, 0, 0.08) 0%,
+                rgba(255, 215, 0, 0.02) 100%);
+            border: 2px solid #ff8c00;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-md);
+        }
+
+        .ai-conclusion-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .ai-conclusion-content {
+            flex: 1;
+        }
+
+        .ai-conclusion-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f4ea3beb;
+            margin-bottom: var(--spacing-xs);
+            letter-spacing: 1px;
+        }
+
+        .ai-conclusion-text {
+            font-size: 13px;
+            color: #f0ee76;
+            line-height: 1.6;
+        }
+
         /* ===== 左侧列 ===== */
         .left-column {
             display: flex;
@@ -317,6 +355,16 @@
                         <div class="ai-metric-box">
                             <div class="ai-metric-value" style="color: var(--danger-color);">-33%</div>
                             <div class="ai-metric-label">效率变化</div>
+                        </div>
+                    </div>
+
+                    <!-- AI智能结论 -->
+                    <div class="ai-conclusion">
+                        <div class="ai-conclusion-content">
+                            <div class="ai-conclusion-title">AI智能结论</div>
+                            <div class="ai-conclusion-text">
+                                项目整体运行基本正常，但硬件采购环节存在延迟风险。建议加快资金拨付流程，协调机房改造进度，确保6月底前完成设备进场。
+                            </div>
                         </div>
                     </div>
                 </div>
