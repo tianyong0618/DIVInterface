@@ -290,7 +290,7 @@
 
         /* ===== 图表容器 ===== */
         .chart-box { width: 100%; height: 200px; }
-        .chart-box-lg { width: 100%; height: 280px; }
+        .chart-box-lg { width: 100%; height: 400px !important; }
 
         /* ===== 倒计时框 ===== */
         .countdown-box {
@@ -458,7 +458,7 @@
                 <div class="tab-grid-2">
                     <div>
                         <h4 class="section-subtitle">集成进度雷达图</h4>
-                        <div id="chartRadar" class="chart-box-lg"></div>
+                        <div id="chartRadar" class="chart-box-lg" style="min-height:350px;"></div>
                     </div>
                     <div>
                         <h4 class="section-subtitle">第三方对接进度</h4>
@@ -747,35 +747,61 @@ window.addEventListener('resize', () => charts.forEach(c => c.resize()));
    3. 集成进度 - 雷达图
    ============================================================ */
 (function() {
-    const chart = createChart('chartRadar');
-    if (!chart) return;
-
-    chart.setOption({
-        tooltip: {
-            backgroundColor: 'rgba(10,15,26,0.9)',
-            borderColor: 'rgba(0,212,255,0.3)',
-            textStyle: { color: '#fff' }
-        },
-        radar: {
-            indicator: RADAR_DATA.map(d => ({ name: d.subject, max: 100 })),
-            shape: 'polygon',
-            splitNumber: 4,
-            axisName: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
-            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
-            splitArea: { areaStyle: { color: ['rgba(139,92,246,0.02)', 'rgba(139,92,246,0.04)'] } },
-            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } }
-        },
-        series: [{
-            type: 'radar',
-            data: [{
-                value: RADAR_DATA.map(d => d.value),
-                name: '集成进度',
-                lineStyle: { color: '#8b5cf6', width: 2 },
-                areaStyle: { color: 'rgba(139,92,246,0.2)' },
-                itemStyle: { color: '#8b5cf6' }
+    let radarChart = null;
+    
+    function initRadarChart() {
+        if (radarChart) {
+            radarChart.resize();
+            return;
+        }
+        
+        const chartDom = document.getElementById('chartRadar');
+        if (!chartDom) return;
+        
+        radarChart = echarts.init(chartDom, null, { renderer: 'canvas' });
+        charts.push(radarChart);
+        
+        radarChart.setOption({
+            tooltip: {
+                backgroundColor: 'rgba(10,15,26,0.9)',
+                borderColor: 'rgba(0,212,255,0.3)',
+                textStyle: { color: '#fff' }
+            },
+            grid: {
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+                containLabel: true
+            },
+            radar: {
+                indicator: RADAR_DATA.map(d => ({ name: d.subject, max: 100 })),
+                shape: 'polygon',
+                splitNumber: 5,
+                radius: '80%',
+                center: ['50%', '50%'],
+                axisName: { color: 'rgba(255,255,255,0.7)', fontSize: 12 },
+                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+                splitArea: { areaStyle: { color: ['rgba(139,92,246,0.02)', 'rgba(139,92,246,0.04)'] } },
+                axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } }
+            },
+            series: [{
+                type: 'radar',
+                data: [{
+                    value: RADAR_DATA.map(d => d.value),
+                    name: '集成进度',
+                    lineStyle: { color: '#8b5cf6', width: 2 },
+                    areaStyle: { color: 'rgba(139,92,246,0.2)' },
+                    itemStyle: { color: '#8b5cf6' }
+                }]
             }]
-        }]
-    });
+        });
+    }
+    
+    // 暴露初始化函数给外部调用
+    window.initRadarChart = initRadarChart;
+    
+    // 页面加载时不初始化，等tab切换时再初始化
 })();
 
 /* ============================================================
@@ -933,7 +959,15 @@ window.addEventListener('resize', () => charts.forEach(c => c.resize()));
 
             Object.values(contents).forEach(c => { if (c) c.classList.remove('active'); });
             const tabId = this.dataset.tab;
-            if (contents[tabId]) contents[tabId].classList.add('active');
+            if (contents[tabId]) {
+                contents[tabId].classList.add('active');
+                // 切换到集成Tab时，初始化雷达图
+                if (tabId === 'integration' && window.initRadarChart) {
+                    setTimeout(() => {
+                        window.initRadarChart();
+                    }, 50);
+                }
+            }
         });
     });
 })();
