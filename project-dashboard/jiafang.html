@@ -247,6 +247,11 @@
             line-height: 1.6;
         }
 
+        /* 项目甘特总图区域 */
+        .gantt-section {
+            margin-top: var(--spacing-lg);
+        }
+
         /* 问题图表区域 */
         .issue-chart-section {
             margin-top: var(--spacing-lg);
@@ -606,12 +611,6 @@
 
             <!-- ====== 中间列 ====== -->
             <div class="center-column">
-
-                <!-- 项目甘特总图 -->
-                <div class="card">
-                    <div class="card-title">项目甘特总图</div>
-                    <div class="gantt-chart-box" id="ganttChart"></div>
-                </div>
             </div>
 
             <!-- ====== 右侧列 ====== -->
@@ -656,6 +655,14 @@
             </div>
 
         </main>
+
+        <!-- ====== 项目甘特总图 ====== -->
+        <section class="gantt-section">
+            <div class="card">
+                <div class="card-title">项目甘特总图</div>
+                <div class="gantt-chart-box" id="ganttChart"></div>
+            </div>
+        </section>
 
         <!-- ====== 问题闭环与协同督办（图表） ====== -->
         <section class="issue-chart-section">
