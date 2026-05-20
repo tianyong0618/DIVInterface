@@ -1,3 +1,23 @@
+# 承建方执行视角大屏 - 完全替换实施计划
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** 将 `project-dashboard/chengjianfang.html` 完全替换为 Figma 原型 `ContractorDashboard.tsx` 的 HTML/CSS/JS 实现，复用 `common.css` 设计系统。
+
+**Architecture:** 单文件 HTML：内联 CSS（扩展 common.css）+ 内联 JS（ECharts 图表 + 原生交互），无框架依赖。所有 Mock 数据静态内联。
+
+**Tech Stack:** 纯 HTML5 + CSS3 + JavaScript (ES6) + ECharts 5 (CDN)
+
+---
+
+### Task 1: HTML 结构骨架
+
+**Files:**
+- Rewrite: `project-dashboard/chengjianfang.html` (完全替换)
+
+- [ ] **Step 1: 写入 HTML 文档框架 + Header 区域**
+
+```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -7,334 +27,12 @@
     <link rel="stylesheet" href="css/common.css">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
-        /* ===== 覆盖标题栏为承建方风格 ===== */
-        .header {
-            grid-template-columns: 1fr auto;
-        }
-
-        /* ===== 承建方两列布局 ===== */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: var(--spacing-lg);
-        }
-
-        /* ===== AI排程指标卡片行 ===== */
-        .ai-metrics-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-md);
-        }
-
-        .metric-card {
-            background: rgba(0, 0, 0, 0.3);
-            padding: var(--spacing-md);
-            border-radius: var(--radius-md);
-            text-align: center;
-            border: 1px solid rgba(0, 212, 255, 0.1);
-        }
-
-        .metric-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: var(--spacing-xs);
-        }
-
-        .metric-value {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .metric-value.cyan { color: var(--primary-color); text-shadow: 0 0 20px var(--primary-glow); }
-        .metric-value.green { color: var(--secondary-color); text-shadow: 0 0 20px rgba(0,255,136,0.5); }
-        .metric-value.red { color: var(--danger-color); text-shadow: 0 0 20px rgba(255,77,79,0.5); }
-
-        .metric-sub {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: var(--spacing-xs);
-        }
-
-        .progress-fill.green-fill {
-            background: linear-gradient(90deg, var(--secondary-color), #66ffb2);
-        }
-
-        /* ===== AI建议 Alert ===== */
-        .ai-alert {
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--radius-md);
-            font-size: 12px;
-            line-height: 1.6;
-        }
-
-        .ai-alert strong { font-weight: 700; }
-
-        .blue-alert {
-            background: rgba(0, 212, 255, 0.08);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            color: rgba(255, 255, 255, 0.85);
-        }
-
-        .green-alert {
-            background: rgba(0, 255, 136, 0.08);
-            border: 1px solid rgba(0, 255, 136, 0.3);
-            color: rgba(255, 255, 255, 0.85);
-        }
-
-        .purple-alert {
-            background: rgba(168, 85, 247, 0.08);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            color: rgba(255, 255, 255, 0.85);
-        }
-
-        /* ===== 副标题 ===== */
-        .section-subtitle {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: var(--spacing-sm);
-            margin-top: var(--spacing-md);
-        }
-
-        /* ===== 子系统进度列表 ===== */
-        .subsystem-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-md);
-        }
-
-        .subsystem-item {
-            background: rgba(0, 0, 0, 0.25);
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--radius-md);
-        }
-
-        .subsystem-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: var(--spacing-xs);
-        }
-
-        .subsystem-name { font-size: 13px; color: var(--text-primary); }
-        .subsystem-progress-text { font-size: 13px; color: var(--text-muted); }
-
-        .subsystem-warning {
-            font-size: 11px;
-            color: var(--warning-color);
-            margin-top: var(--spacing-xs);
-        }
-
-        /* ===== Tab 切换 ===== */
-        .tabs-container { margin-top: var(--spacing-sm); }
-
-        .tabs-header {
-            display: flex;
-            gap: var(--spacing-xs);
-            margin-bottom: var(--spacing-md);
-            border-bottom: 1px solid var(--bg-border);
-            padding-bottom: var(--spacing-sm);
-        }
-
-        .tab-btn {
-            padding: var(--spacing-sm) var(--spacing-lg);
-            background: transparent;
-            border: 1px solid transparent;
-            border-radius: var(--radius-md);
-            color: var(--text-muted);
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: var(--font-family);
-        }
-
-        .tab-btn:hover {
-            color: var(--text-primary);
-            background: rgba(0, 212, 255, 0.05);
-        }
-
-        .tab-btn.active {
-            color: var(--text-primary);
-            background: rgba(0, 212, 255, 0.12);
-            border-color: rgba(0, 212, 255, 0.3);
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .tab-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-lg);
-        }
-
-        /* ===== 进度列表 (用于模块/第三方) ===== */
-        .progress-list { display: flex; flex-direction: column; gap: var(--spacing-md); }
-
-        .progress-item {
-            background: rgba(0, 0, 0, 0.25);
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--radius-md);
-        }
-
-        .progress-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--spacing-xs);
-        }
-
-        .progress-item-name { font-size: 12px; color: var(--text-primary); }
-        .progress-item-status { font-size: 10px; }
-
-        /* ===== Bug统计 ===== */
-        .bug-stats {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-md);
-            background: rgba(0, 0, 0, 0.25);
-            padding: var(--spacing-md);
-            border-radius: var(--radius-md);
-        }
-
-        .bug-stat-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .bug-label { font-size: 13px; color: var(--text-muted); }
-        .bug-value { font-size: 22px; font-weight: 700; }
-        .bug-value.red { color: var(--danger-color); }
-        .bug-value.green { color: var(--secondary-color); }
-        .bug-value.cyan { color: var(--primary-color); }
-
-        /* ===== 数据表格 ===== */
-        .table-wrapper { overflow-x: auto; }
-
-        .data-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 12px;
-        }
-
-        .data-table thead {
-            background: rgba(0, 212, 255, 0.06);
-        }
-
-        .data-table th {
-            padding: var(--spacing-sm) var(--spacing-md);
-            text-align: left;
-            font-weight: 600;
-            color: var(--primary-color);
-            border-bottom: 1px solid var(--bg-border);
-            white-space: nowrap;
-        }
-
-        .data-table tbody tr {
-            background: rgba(0, 0, 0, 0.2);
-            transition: background 0.3s ease;
-        }
-
-        .data-table tbody tr:hover {
-            background: rgba(0, 212, 255, 0.06);
-        }
-
-        .data-table td {
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            color: rgba(255, 255, 255, 0.85);
-        }
-
-        /* ===== Badge 标签 ===== */
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .badge-default { background: rgba(0, 212, 255, 0.15); color: var(--primary-color); }
-        .badge-secondary { background: rgba(255, 255, 255, 0.1); color: var(--text-muted); }
-        .badge-destructive { background: rgba(255, 77, 79, 0.2); color: var(--danger-color); }
-        .badge-success { background: rgba(0, 255, 136, 0.15); color: var(--secondary-color); }
-        .badge-warning { background: rgba(255, 159, 67, 0.2); color: var(--warning-color); }
-
-        .badge-icon {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* ===== 成本汇总 ===== */
-        .cost-summary {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-md);
-            margin-top: var(--spacing-md);
-        }
-
-        .cost-summary-card {
-            background: rgba(0, 0, 0, 0.25);
-            padding: var(--spacing-md);
-            border-radius: var(--radius-md);
-            text-align: center;
-        }
-
-        .cost-label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: var(--spacing-xs); }
-        .cost-value { font-size: 22px; font-weight: 700; color: var(--text-primary); }
-        .cost-value.green { color: var(--secondary-color); }
-
-        /* ===== 图表容器 ===== */
-        .chart-box { width: 100%; height: 200px; }
-        .chart-box-lg { width: 100%; height: 280px; }
-
-        /* ===== 倒计时框 ===== */
-        .countdown-box {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            padding: 6px 14px;
-            background: rgba(255, 159, 67, 0.12);
-            border: 1px solid rgba(255, 159, 67, 0.3);
-            border-radius: var(--radius-md);
-        }
-
-        .countdown-label { font-size: 11px; color: var(--text-muted); }
-        .countdown-value { font-size: 22px; font-weight: 700; color: var(--warning-color); }
-
-        /* ===== 卡片淡入动画 ===== */
-        .card {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: cardFadeIn 0.6s ease forwards;
-        }
-        @keyframes cardFadeIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ===== 响应式 ===== */
-        @media (max-width: 1200px) {
-            .main-grid { grid-template-columns: 1fr; }
-            .ai-metrics-row { grid-template-columns: repeat(3, 1fr); }
-            .tab-grid-2 { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 768px) {
-            .ai-metrics-row { grid-template-columns: 1fr; }
-            .cost-summary { grid-template-columns: 1fr; }
-            .header { grid-template-columns: 1fr; }
-            .header-info-left { flex-wrap: wrap; gap: var(--spacing-sm); }
-        }
+        /* (CSS will be added in Task 2) */
     </style>
 </head>
 <body>
 <div class="dashboard-container">
-
-    <!-- ========== Header ========== -->
+    <!-- Header -->
     <header class="header">
         <div class="header-title">
             <h1>AI项目落地执行作战大屏</h1>
@@ -362,45 +60,52 @@
         </div>
     </header>
 
-    <!-- ========== Row 1: AI排程 + 子系统进度 ========== -->
+    <!-- Row 1: AI排程 + 子系统进度 -->
     <div class="main-grid">
-
-        <!-- AI智能排程与进度调度 -->
-        <div class="card" style="animation-delay:0.05s;">
+        <!-- AI智能排程 - 左2/3 -->
+        <div class="card ai-schedule-card">
             <div class="card-title">AI智能排程与进度调度</div>
+            <!-- 3指标卡 -->
             <div class="ai-metrics-row">
+                <!-- 整体完成率 -->
                 <div class="metric-card">
                     <div class="metric-label">整体完成率</div>
                     <div class="metric-value cyan">68.5%</div>
                     <div class="progress-bar"><div class="progress-fill cyan" style="width:68.5%"></div></div>
                 </div>
+                <!-- 本周任务达成 -->
                 <div class="metric-card">
                     <div class="metric-label">本周任务达成</div>
                     <div class="metric-value green">87%</div>
                     <div class="progress-bar"><div class="progress-fill green-fill" style="width:87%"></div></div>
                 </div>
+                <!-- 滞后工序 -->
                 <div class="metric-card">
                     <div class="metric-label">滞后工序</div>
                     <div class="metric-value red">3项</div>
                     <div class="metric-sub">需抢工</div>
                 </div>
             </div>
+            <!-- AI建议 -->
             <div class="ai-alert blue-alert">
                 <strong>AI优化建议:</strong> 系统集成环节滞后，建议将部分开发人员提前介入联调工作，硬件部署与软件开发可并行进行，预计可缩短15天工期。
             </div>
+            <!-- 周度任务图表 -->
             <h4 class="section-subtitle">周度任务执行情况</h4>
             <div id="chartSchedule" class="chart-box"></div>
         </div>
 
-        <!-- 各子系统建设进度 -->
-        <div class="card" style="animation-delay:0.1s;">
+        <!-- 子系统进度 - 右1/3 -->
+        <div class="card subsystem-card">
             <div class="card-title">各子系统建设进度</div>
-            <div id="subsystemList" class="subsystem-list"></div>
+            <div id="subsystemList" class="subsystem-list">
+                <!-- JS渲染 -->
+            </div>
         </div>
     </div>
 
-    <!-- ========== Row 2: 分项业务实施管控 (Tabs) ========== -->
-    <div class="card" style="margin-top:var(--spacing-lg);animation-delay:0.15s;">
+    <!-- Row 2: 分项业务实施管控 (Tabs) -->
+    <div class="card impl-card" style="margin-top: var(--spacing-lg);">
         <div class="card-title">分项业务实施管控</div>
         <div class="tabs-container">
             <div class="tabs-header">
@@ -408,9 +113,8 @@
                 <button class="tab-btn" data-tab="hardware">硬件实施</button>
                 <button class="tab-btn" data-tab="integration">系统集成</button>
             </div>
-
-            <!-- 软件研发 Tab -->
             <div class="tab-content active" id="tabSoftware">
+                <!-- 软件研发内容 -->
                 <div class="tab-grid-2">
                     <div>
                         <h4 class="section-subtitle">模块开发进度</h4>
@@ -419,28 +123,16 @@
                     <div>
                         <h4 class="section-subtitle">Bug修复统计</h4>
                         <div class="bug-stats">
-                            <div class="bug-stat-item">
-                                <span class="bug-label">待修复Bug</span>
-                                <span class="bug-value red">12</span>
-                            </div>
-                            <div class="bug-stat-item">
-                                <span class="bug-label">本周修复</span>
-                                <span class="bug-value green">28</span>
-                            </div>
-                            <div class="bug-stat-item">
-                                <span class="bug-label">累计修复</span>
-                                <span class="bug-value cyan">156</span>
-                            </div>
+                            <div class="bug-stat-item"><span class="bug-label">待修复Bug</span><span class="bug-value red">12</span></div>
+                            <div class="bug-stat-item"><span class="bug-label">本周修复</span><span class="bug-value green">28</span></div>
+                            <div class="bug-stat-item"><span class="bug-label">累计修复</span><span class="bug-value cyan">156</span></div>
                         </div>
-                        <div class="ai-alert green-alert" style="margin-top:var(--spacing-md)">
-                            Bug修复效率良好，建议继续保持代码质量管控。
-                        </div>
+                        <div class="ai-alert green-alert" style="margin-top:var(--spacing-md)">Bug修复效率良好，建议继续保持代码质量管控。</div>
                     </div>
                 </div>
             </div>
-
-            <!-- 硬件实施 Tab -->
             <div class="tab-content" id="tabHardware">
+                <!-- 硬件实施表格 -->
                 <div class="table-wrapper">
                     <table class="data-table">
                         <thead>
@@ -450,13 +142,11 @@
                     </table>
                 </div>
             </div>
-
-            <!-- 系统集成 Tab -->
             <div class="tab-content" id="tabIntegration">
                 <div class="tab-grid-2">
                     <div>
                         <h4 class="section-subtitle">集成进度雷达图</h4>
-                        <div id="chartRadar" class="chart-box-lg"></div>
+                        <div id="chartRadar" class="chart-box" style="height:280px;"></div>
                     </div>
                     <div>
                         <h4 class="section-subtitle">第三方对接进度</h4>
@@ -467,11 +157,10 @@
         </div>
     </div>
 
-    <!-- ========== Row 3: 成本管控 + 人员看板 ========== -->
-    <div class="grid-2" style="margin-top:var(--spacing-lg);">
-
-        <!-- 内部成本管控 -->
-        <div class="card" style="animation-delay:0.2s;">
+    <!-- Row 3: 成本管控 + 人员看板 -->
+    <div class="grid-2" style="margin-top: var(--spacing-lg);">
+        <!-- 内部成本 -->
+        <div class="card">
             <div class="card-title">内部成本管控</div>
             <div id="chartCost" class="chart-box"></div>
             <div class="cost-summary">
@@ -484,13 +173,11 @@
                     <span class="cost-value green">88.5%</span>
                 </div>
             </div>
-            <div class="ai-alert blue-alert" style="margin-top:var(--spacing-sm)">
-                成本控制良好，预算执行率在合理范围内。
-            </div>
+            <div class="ai-alert blue-alert" style="margin-top:var(--spacing-sm)">成本控制良好，预算执行率在合理范围内。</div>
         </div>
 
-        <!-- 人员班组任务看板 -->
-        <div class="card" style="animation-delay:0.25s;">
+        <!-- 人员看板 -->
+        <div class="card">
             <div class="card-title">人员班组任务看板</div>
             <div class="table-wrapper">
                 <table class="data-table">
@@ -503,8 +190,8 @@
         </div>
     </div>
 
-    <!-- ========== Row 4: 现场问题&风险化解 ========== -->
-    <div class="card" style="margin-top:var(--spacing-lg);animation-delay:0.3s;">
+    <!-- Row 4: 现场问题&风险化解 -->
+    <div class="card" style="margin-top: var(--spacing-lg);">
         <div class="card-title">现场问题&风险化解专区</div>
         <div class="table-wrapper">
             <table class="data-table">
@@ -519,9 +206,379 @@
         </div>
     </div>
 
-</div><!-- /.dashboard-container -->
-
+</div>
 <script>
+/* (JS will be added in Tasks 3-5) */
+</script>
+</body>
+</html>
+```
+
+- [ ] **Step 2: 确认 HTML 结构完整性**
+
+验证要点：
+- 所有 chart 容器 div 有唯一 id（chartSchedule, chartRadar, chartCost）
+- 所有 JS 动态渲染容器有 id（subsystemList, softwareModules, hardwareTableBody, thirdPartyList, teamTableBody, issuesTableBody）
+- Header 布局使用 header-info-left / header-info-right
+- Tab 容器结构：tabs-container > tabs-header (button[data-tab]) + tab-content[id]
+- grid-2 用于成本+人员看板行
+
+---
+
+### Task 2: CSS 样式
+
+**Files:**
+- Modify: `project-dashboard/chengjianfang.html` (在 `<style>` 中追加)
+
+- [ ] **Step 1: 写入全部内联 CSS**
+
+追加到 `<style>` 标签内：
+
+```css
+/* ===== 覆盖标题栏为承建方风格 ===== */
+.header {
+    grid-template-columns: 1fr auto;
+}
+
+/* ===== 承建方三列布局覆盖 ===== */
+.main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+/* ===== AI排程指标卡片行 ===== */
+.ai-metrics-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.metric-card {
+    background: rgba(0, 0, 0, 0.3);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    text-align: center;
+    border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.metric-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-xs);
+}
+
+.metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: var(--spacing-sm);
+}
+
+.metric-value.cyan { color: var(--primary-color); text-shadow: 0 0 20px var(--primary-glow); }
+.metric-value.green { color: var(--secondary-color); text-shadow: 0 0 20px rgba(0,255,136,0.5); }
+.metric-value.red { color: var(--danger-color); text-shadow: 0 0 20px rgba(255,77,79,0.5); }
+
+.metric-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: var(--spacing-xs);
+}
+
+/* 进度条绿色变体 */
+.progress-fill.green-fill {
+    background: linear-gradient(90deg, var(--secondary-color), #66ffb2);
+}
+
+/* ===== AI建议 Alert ===== */
+.ai-alert {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.ai-alert strong {
+    font-weight: 700;
+}
+
+.blue-alert {
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.green-alert {
+    background: rgba(0, 255, 136, 0.08);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.purple-alert {
+    background: rgba(168, 85, 247, 0.08);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ===== 副标题 ===== */
+.section-subtitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+/* ===== 子系统进度列表 ===== */
+.subsystem-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.subsystem-item {
+    background: rgba(0, 0, 0, 0.25);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.subsystem-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xs);
+}
+
+.subsystem-name { font-size: 13px; color: var(--text-primary); }
+.subsystem-progress-text { font-size: 13px; color: var(--text-muted); }
+
+.subsystem-warning {
+    font-size: 11px;
+    color: var(--warning-color);
+    margin-top: var(--spacing-xs);
+}
+
+/* ===== Tab 切换 ===== */
+.tabs-container { margin-top: var(--spacing-sm); }
+
+.tabs-header {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--bg-border);
+    padding-bottom: var(--spacing-sm);
+}
+
+.tab-btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: var(--font-family);
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.tab-btn.active {
+    color: var(--text-primary);
+    background: rgba(0, 212, 255, 0.12);
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.tab-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+/* ===== 进度列表 (用于模块/第三方) ===== */
+.progress-list { display: flex; flex-direction: column; gap: var(--spacing-md); }
+
+.progress-item {
+    background: rgba(0, 0, 0, 0.25);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.progress-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+}
+
+.progress-item-name { font-size: 12px; color: var(--text-primary); }
+.progress-item-status { font-size: 10px; }
+
+/* ===== Bug统计 ===== */
+.bug-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    background: rgba(0, 0, 0, 0.25);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.bug-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bug-label { font-size: 13px; color: var(--text-muted); }
+.bug-value { font-size: 22px; font-weight: 700; }
+.bug-value.red { color: var(--danger-color); }
+.bug-value.green { color: var(--secondary-color); }
+.bug-value.cyan { color: var(--primary-color); }
+
+/* ===== 数据表格 ===== */
+.table-wrapper { overflow-x: auto; }
+
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 12px;
+}
+
+.data-table thead {
+    background: rgba(0, 212, 255, 0.06);
+}
+
+.data-table th {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: left;
+    font-weight: 600;
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--bg-border);
+    white-space: nowrap;
+}
+
+.data-table tbody tr {
+    background: rgba(0, 0, 0, 0.2);
+    transition: background 0.3s ease;
+}
+
+.data-table tbody tr:hover {
+    background: rgba(0, 212, 255, 0.06);
+}
+
+.data-table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ===== Badge 标签 ===== */
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.badge-default { background: rgba(0, 212, 255, 0.15); color: var(--primary-color); }
+.badge-secondary { background: rgba(255, 255, 255, 0.1); color: var(--text-muted); }
+.badge-destructive { background: rgba(255, 77, 79, 0.2); color: var(--danger-color); }
+.badge-success { background: rgba(0, 255, 136, 0.15); color: var(--secondary-color); }
+.badge-warning { background: rgba(255, 159, 67, 0.2); color: var(--warning-color); }
+
+.badge-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ===== 成本汇总 ===== */
+.cost-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.cost-summary-card {
+    background: rgba(0, 0, 0, 0.25);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.cost-label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: var(--spacing-xs); }
+.cost-value { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.cost-value.green { color: var(--secondary-color); }
+
+/* ===== 图表容器 ===== */
+.chart-box { width: 100%; height: 200px; }
+
+/* ===== 倒计时框 (Header右侧) ===== */
+.countdown-box {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 6px 14px;
+    background: rgba(255, 159, 67, 0.12);
+    border: 1px solid rgba(255, 159, 67, 0.3);
+    border-radius: var(--radius-md);
+}
+
+.countdown-label { font-size: 11px; color: var(--text-muted); }
+.countdown-value { font-size: 22px; font-weight: 700; color: var(--warning-color); }
+
+/* ===== 卡片淡入动画 ===== */
+.card {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: cardFadeIn 0.6s ease forwards;
+}
+@keyframes cardFadeIn {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 1200px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .ai-metrics-row { grid-template-columns: repeat(3, 1fr); }
+    .tab-grid-2 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    .ai-metrics-row { grid-template-columns: 1fr; }
+    .cost-summary { grid-template-columns: 1fr; }
+    .header { grid-template-columns: 1fr; }
+    .header-info-left { flex-wrap: wrap; gap: var(--spacing-sm); }
+}
+```
+
+- [ ] **Step 2: 验证 CSS 效果**
+
+检查：
+- `.card` 淡入动画避免与 common.css 冲突（common.css 的 `.card` 有背景色，这里只追加动画）
+- 所有 className 与 HTML 结构匹配
+- 响应式断点覆盖 1200px 和 768px
+- `progress-fill.green-fill` 不冲突（common.css 有 `.progress-fill.cyan/orange/red`）
+
+---
+
+### Task 3: JS - Mock 数据 + 工具函数
+
+**Files:**
+- Modify: `project-dashboard/chengjianfang.html` (在 `<script>` 中追加)
+
+- [ ] **Step 1: 写入 Mock 数据和工具函数**
+
+```javascript
 /* ============================================================
    Mock 数据
    ============================================================ */
@@ -598,7 +655,7 @@ const ISSUES = [
    工具函数
    ============================================================ */
 
-/** 实时时钟 */
+// 实时时钟
 function updateClock() {
     const now = new Date();
     const pad = n => String(n).padStart(2, '0');
@@ -608,7 +665,7 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 
-/** ECharts 实例管理 */
+// 所有 ECharts 实例
 const charts = [];
 
 function createChart(domId) {
@@ -620,7 +677,25 @@ function createChart(domId) {
 }
 
 window.addEventListener('resize', () => charts.forEach(c => c.resize()));
+```
 
+- [ ] **Step 2: 验证数据结构和工具函数**
+
+检查：
+- DOM 元素 `updateTime` 存在
+- `createChart()` 函数在所有图表初始化前已定义
+- `charts[]` 数组管理所有实例
+
+---
+
+### Task 4: JS - ECharts 图表渲染
+
+**Files:**
+- Modify: `project-dashboard/chengjianfang.html` (在 Task 3 JS 之后追加)
+
+- [ ] **Step 1: 写入周度任务柱状图和成本横向柱状图**
+
+```javascript
 /* ============================================================
    1. 周度任务 - 分组柱状图
    ============================================================ */
@@ -775,7 +850,26 @@ window.addEventListener('resize', () => charts.forEach(c => c.resize()));
         }]
     });
 })();
+```
 
+- [ ] **Step 2: 验证图表渲染**
+
+确认：
+- `chartSchedule` 柱状图按周展示计划 vs 完成任务
+- `chartCost` 横向柱状图展示成本 vs 预算
+- `chartRadar` 雷达图展示5维集成进度
+- 所有图表使用深色主题、渐变配色、圆角柱条
+
+---
+
+### Task 5: JS - 动态渲染 + Tab 切换
+
+**Files:**
+- Modify: `project-dashboard/chengjianfang.html` (在 Task 4 JS 之后追加)
+
+- [ ] **Step 1: 写入子系统进度渲染**
+
+```javascript
 /* ============================================================
    4. 渲染子系统进度
    ============================================================ */
@@ -784,7 +878,7 @@ window.addEventListener('resize', () => charts.forEach(c => c.resize()));
     if (!container) return;
 
     container.innerHTML = SYSTEM_PROGRESS.map(d => {
-        const barColor = d.progress >= 60 ? 'cyan' : 'orange';
+        const barColor = d.progress >= 80 ? 'cyan' : d.progress >= 60 ? 'cyan' : 'orange';
         return `
             <div class="subsystem-item">
                 <div class="subsystem-header">
@@ -854,7 +948,8 @@ window.addEventListener('resize', () => charts.forEach(c => c.resize()));
     if (!container) return;
 
     container.innerHTML = THIRD_PARTY.map(d => {
-        const barColor = d.progress === 100 ? 'cyan' : d.progress >= 50 ? 'cyan' : '';
+        const barColor = d.progress === 100 ? 'cyan' :
+                         d.progress >= 50 ? 'cyan' : '';
         const badgeClass = d.statusType === 'success' ? 'badge badge-success' :
                           d.statusType === 'default' ? 'badge badge-default' : 'badge badge-secondary';
         return `
@@ -918,23 +1013,64 @@ window.addEventListener('resize', () => charts.forEach(c => c.resize()));
    ============================================================ */
 (function() {
     const tabs = document.querySelectorAll('.tab-btn');
-    const contents = {
-        'software': document.getElementById('tabSoftware'),
-        'hardware': document.getElementById('tabHardware'),
-        'integration': document.getElementById('tabIntegration')
-    };
-
     tabs.forEach(btn => {
         btn.addEventListener('click', function() {
+            // 切换按钮状态
             tabs.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-
-            Object.values(contents).forEach(c => { if (c) c.classList.remove('active'); });
+            // 切换内容
             const tabId = this.dataset.tab;
-            if (contents[tabId]) contents[tabId].classList.add('active');
+            const contents = {
+                'software': 'tabSoftware',
+                'hardware': 'tabHardware',
+                'integration': 'tabIntegration'
+            };
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(contents[tabId]).classList.add('active');
         });
     });
 })();
-</script>
-</body>
-</html>
+```
+
+- [ ] **Step 2: 验证所有动态渲染**
+
+检查：
+- 浏览器打开页面，所有数据正确渲染
+- Tab 切换正常：点击"硬件实施"显示表格，点击"系统集成"显示雷达图+列表
+- 时钟每秒更新
+- 页面 resize 时图表自适应
+- 无 JS 报错
+
+---
+
+### Task 6: 最终验证
+
+- [ ] **Step 1: LSP 诊断检查**
+
+```bash
+# 检查文件是否有基础语法问题
+lsp_diagnostics filePath="project-dashboard/chengjianfang.html"
+```
+
+- [ ] **Step 2: 浏览器打开验证**
+
+```bash
+# 在浏览器中打开验证
+open project-dashboard/chengjianfang.html
+```
+
+手动验证清单：
+- [ ] 页面加载无白屏
+- [ ] Header 显示正确：标题、甲方单位、实施阶段、考核分、倒计时、时钟
+- [ ] AI排程区域：3个指标卡显示 68.5%/87%/3项
+- [ ] AI优化建议 Alert 显示
+- [ ] 周度任务柱状图正常渲染
+- [ ] 子系统进度 5 条进度条，报表系统显示⚠️滞后
+- [ ] 分项Tab：软件研发 Tab 显示模块进度 + Bug统计
+- [ ] 硬件实施 Tab 显示5行表格
+- [ ] 系统集成 Tab 显示雷达图 + 第三方对接列表
+- [ ] 成本管控：横向柱状图 + 汇总卡片
+- [ ] 人员看板：6名成员表格
+- [ ] 问题表格：4条数据 + AI提示
+- [ ] 响应式：缩窄浏览器窗口布局适配
+- [ ] 页面淡入动画流畅
