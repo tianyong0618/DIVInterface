@@ -12,7 +12,7 @@
             position: relative;
             z-index: 1;
             display: grid;
-            grid-template-columns: 1fr 1.2fr 1fr;
+            grid-template-columns: 1.1fr 1fr 1.1fr;
             gap: var(--spacing-lg);
         }
 
@@ -109,6 +109,10 @@
             gap: var(--spacing-lg);
         }
 
+        .left-column .card {
+            flex: 1;
+        }
+
         /* AI核心研判区 */
         .ai-gauges-row {
             display: flex;
@@ -149,7 +153,7 @@
         /* 投资与资金管控 */
         .invest-chart-box {
             width: 100%;
-            height: 180px;
+            height: 160px;
         }
 
         .mini-donuts {
@@ -210,6 +214,22 @@
             font-weight: 700;
         }
 
+        /* ===== 中间列 ===== */
+        .center-column {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .center-column .card {
+            flex: 1;
+        }
+
+        .resource-chart-box {
+            width: 100%;
+            height: 180px;
+        }
+
         /* 资源AI提醒区域 */
         .resource-ai-reminder {
             margin-top: var(--spacing-sm);
@@ -245,6 +265,47 @@
             font-size: 12px;
             color: rgba(255, 255, 255, 0.85);
             line-height: 1.6;
+        }
+
+        /* 右下环形图区域 */
+        .donut-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+
+        .donut-item {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .donut-chart-box {
+            width: 100%;
+            height: 130px;
+        }
+
+        .donut-label-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: var(--spacing-xs);
+        }
+
+        /* ===== 右侧列 ===== */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-column .card {
+            flex: 1;
+        }
+
+        .progress-chart-box {
+            width: 100%;
+            height: 180px;
         }
 
         /* 项目甘特总图区域 */
@@ -577,7 +638,52 @@
                     </div>
                 </div>
 
-                <!-- 左下：投资与资金管控 -->
+                <!-- 左下：全维度进度可视化 -->
+                <div class="card">
+                    <div class="card-title">全维度进度可视化</div>
+                    <div class="progress-chart-box" id="progressChart"></div>
+                </div>
+            </div>
+
+            <!-- ====== 中间列 ====== -->
+            <div class="center-column">
+
+                <!-- 资源与人员履约看板（图表） -->
+                <div class="card">
+                    <div class="card-title">资源与人员履约看板</div>
+                    <div class="resource-chart-box" id="resourceChart"></div>
+                    <!-- AI提醒区域 -->
+                    <div class="resource-ai-reminder">
+                        <div class="resource-ai-icon">⚠️</div>
+                        <div class="resource-ai-content">
+                            <div class="resource-ai-title">AI提醒</div>
+                            <div class="resource-ai-text">
+                                开发与测试人员配置不足，可能影响软件开发进度，建议尽快补充。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 资源与人员履约看板（环形图） -->
+                <div class="card">
+                    <div class="card-title">资源与人员履约看板</div>
+                    <div class="donut-pair">
+                        <div class="donut-item">
+                            <div class="donut-chart-box" id="donutCompliance"></div>
+                            <div class="donut-label-text">履约进度</div>
+                        </div>
+                        <div class="donut-item">
+                            <div class="donut-chart-box" id="donutFund"></div>
+                            <div class="donut-label-text">资金拨付</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 右侧列 ====== -->
+            <div class="right-column">
+
+                <!-- 投资与资金管控 -->
                 <div class="card">
                     <div class="card-title">投资与资金管控</div>
                     <!-- 横向柱状图 -->
@@ -604,51 +710,6 @@
                             <div class="invest-ai-text">
                                 资金拨付进度<strong>33%</strong>，略低于项目进度<strong>78.5%</strong>，建议加快第三批次拨付审批。
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ====== 中间列 ====== -->
-            <div class="center-column">
-            </div>
-
-            <!-- ====== 右侧列 ====== -->
-            <div class="right-column">
-
-                <!-- 右上：全维度进度可视化 -->
-                <div class="card">
-                    <div class="card-title">全维度进度可视化</div>
-                    <div class="progress-chart-box" id="progressChart"></div>
-                </div>
-
-                <!-- 右中：资源与人员履约看板 -->
-                <div class="card">
-                    <div class="card-title">资源与人员履约看板</div>
-                    <div class="resource-chart-box" id="resourceChart"></div>
-                    <!-- AI提醒区域 -->
-                    <div class="resource-ai-reminder">
-                        <div class="resource-ai-icon">⚠️</div>
-                        <div class="resource-ai-content">
-                            <div class="resource-ai-title">AI提醒</div>
-                            <div class="resource-ai-text">
-                                开发与测试人员配置不足，可能影响软件开发进度，建议尽快补充。
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 右下：资源与人员履约看板2 -->
-                <div class="card">
-                    <div class="card-title">资源与人员履约看板</div>
-                    <div class="donut-pair">
-                        <div class="donut-item">
-                            <div class="donut-chart-box" id="donutCompliance"></div>
-                            <div class="donut-label-text">履约进度</div>
-                        </div>
-                        <div class="donut-item">
-                            <div class="donut-chart-box" id="donutFund"></div>
-                            <div class="donut-label-text">资金拨付</div>
                         </div>
                     </div>
                 </div>
