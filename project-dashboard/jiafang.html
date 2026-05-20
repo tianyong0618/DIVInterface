@@ -247,6 +247,11 @@
             line-height: 1.6;
         }
 
+        /* 问题图表区域 */
+        .issue-chart-section {
+            margin-top: var(--spacing-lg);
+        }
+
         /* 问题列表区域 */
         .issue-list-section {
             margin-top: var(--spacing-lg);
@@ -607,26 +612,6 @@
                     <div class="card-title">项目甘特总图</div>
                     <div class="gantt-chart-box" id="ganttChart"></div>
                 </div>
-
-                <!-- 问题闭环与协同督办 -->
-                <div class="card">
-                    <div class="card-title">问题闭环与协同督办</div>
-                    <div class="issue-chart-box" id="issueChart"></div>
-                    <div class="issue-legend">
-                        <div class="legend-item">
-                            <span class="legend-dot" style="background:#ff4d4f;"></span>
-                            <span>未处理</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot" style="background:#ff9f43;"></span>
-                            <span>处理中</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot" style="background:#00d4ff;"></span>
-                            <span>已解决</span>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- ====== 右侧列 ====== -->
@@ -671,6 +656,28 @@
             </div>
 
         </main>
+
+        <!-- ====== 问题闭环与协同督办（图表） ====== -->
+        <section class="issue-chart-section">
+            <div class="card">
+                <div class="card-title">问题闭环与协同督办</div>
+                <div class="issue-chart-box" id="issueChart"></div>
+                <div class="issue-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#ff4d4f;"></span>
+                        <span>未处理</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#ff9f43;"></span>
+                        <span>处理中</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#00d4ff;"></span>
+                        <span>已解决</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- ====== 问题列表区域 ====== -->
         <section class="issue-list-section">
