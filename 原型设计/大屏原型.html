@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AI项目管理大屏原型</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        html,body{width:1920px;height:1080px;background:#0a1929;color:#fff;font-family:"Microsoft YaHei",sans-serif;overflow:hidden}
+        /* 标签栏 */
+        .tab-bar{height:60px;background:#003366;display:flex;align-items:center;padding:0 30px;gap:20px}
+        .tab{padding:10px 30px;border-radius:4px;cursor:pointer;font-size:18px;background:#0055aa;border:none;color:#fff}
+        .tab.active{background:#00ffcc;color:#000}
+        /* 页面容器 */
+        .page{display:none;width:100%;height:1020px;padding:20px;flex-direction:column;gap:15px}
+        .page.active{display:flex}
+        /* 通用样式 */
+        .header{height:90px;background:linear-gradient(90deg,#003366,#0055aa);border-radius:8px;padding:0 30px;display:flex;align-items:center;justify-content:space-between}
+        .header-right{font-size:18px;display:flex;gap:30px}
+        .row{display:flex;gap:15px;flex:1}
+        .card{background:rgba(17,34,64,.9);border:2px solid #1e5bc8;border-radius:8px;padding:20px}
+        .card-title{font-size:24px;font-weight:700;color:#4fc6ff;margin-bottom:20px;border-left:5px solid #4fc6ff;padding-left:10px}
+        .num{font-size:42px;font-weight:700;color:#00ffcc;margin:15px 0}
+        .warn-text{color:#ff4d4f;font-size:20px;font-weight:700;margin:10px 0}
+        .text{font-size:18px;line-height:1.8}
+        .w40{width:40%}
+        .w60{width:60%}
+        .chart{width:100%;height:280px;background:rgba(255,255,255,.05);border-radius:4px;margin-top:15px;display:flex;align-items:center;justify-content:center;color:#4fc6ff}
+        .table{width:100%;margin-top:20px;border-collapse:collapse;font-size:16px}
+        .table th,.table td{padding:12px;text-align:left;border-bottom:1px solid #1e5bc8}
+        .footer{height:80px;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+        .btn{background:#0055aa;color:#fff;border:none;padding:12px 25px;border-radius:4px;font-size:16px}
+        /* 承建方样式覆盖 */
+        .page2 .header{background:linear-gradient(90deg,#004499,#0088ff)}
+        .page2 .card{border:2px solid #0088ff}
+        .page2 .card-title{color:#66ccff;border-left:5px solid #66ccff}
+        .page2 .warn-text{color:#ff6a00}
+        .page2 .btn{background:#0088ff}
+        .page2 .btn-success{background:#00b42a}
+    </style>
+</head>
+<body>
+    <!-- 标签切换栏 -->
+    <div class="tab-bar">
+        <button class="tab active" onclick="switchPage(1)">甲方管控驾驶舱</button>
+        <button class="tab" onclick="switchPage(2)">承建方作战大屏</button>
+    </div>
+
+    <!-- 页面1：甲方视角 -->
+    <div class="page active" id="page1">
+        <div class="header">
+            <div><h2>大型信息化项目AI智能管控驾驶舱</h2><span>项目编号：XM-2024-001 | 建设周期：2024.01-2024.12</span></div>
+            <div class="header-right"><span>AI综合评级：<span style="color:#ffaa00">预警</span></span><span>更新时间：2024-05-20 15:30:22</span></div>
+        </div>
+        <div class="row">
+            <div class="w40"><div class="card"><div class="card-title">AI核心智能研判区</div><div class="num">进度达成率：85%</div><div class="warn-text">工期偏差：+3天</div><p class="text">AI结论：项目整体进度滞后3天，硬件到货延迟导致调试卡点</p><p class="warn-text">风险预警：资金拨付滞后 | 工期卡点</p></div></div>
+            <div class="w60"><div class="card"><div class="card-title">全维度进度可视化</div><div class="chart">甘特图：计划/实际进度对比</div></div></div>
+        </div>
+        <div class="row">
+            <div class="w40"><div class="card"><div class="card-title">投资与资金管控</div><div class="num">总投资：5000万 | 已拨付：3500万</div><div class="chart">资金拨付趋势图</div></div></div>
+            <div class="w60"><div class="card"><div class="card-title">资源与人员履约看板</div><div class="num">在岗人员：25/30人 | 达标率：83%</div><table class="table"><tr><th>设备名称</th><th>到货时间</th><th>验收状态</th></tr><tr><td>服务器</td><td>2024-05-10</td><td>已验收</td></tr><tr><td>网络设备</td><td>2024-05-18</td><td>待验收</td></tr></table></div></div>
+        </div>
+        <div class="card footer"><p class="text">问题闭环：技术问题3个 | 协调问题2个</p><p class="warn-text">需求变更：预计增加工期5天，预算8万</p><button class="btn">导出AI督查报告</button></div>
+    </div>
+
+    <!-- 页面2：承建方视角 -->
+    <div class="page page2" id="page2">
+        <div class="header">
+            <div><h2>AI项目落地执行作战大屏</h2><span>甲方单位：XX政府部门 | 实施阶段：集成调试</span></div>
+            <div class="header-right"><span>剩余工期：185天</span><span>内部考核：90分 ★★★★☆</span></div>
+        </div>
+        <div class="row">
+            <div class="w40"><div class="card"><div class="card-title">AI智能排程与进度调度</div><div class="num">施工完成率：82%</div><p class="text">软件研发：80% | 硬件实施：90%</p><p class="warn-text">AI建议：调试与运维并行，缩短工期2天</p></div></div>
+            <div class="w60"><div class="card"><div class="card-title">分项业务实施管控</div><div class="chart">研发/实施/联调进度柱状图</div></div></div>
+        </div>
+        <div class="row">
+            <div class="w40"><div class="card"><div class="card-title">内部成本与物资管控</div><div class="num">实际投入：3200万 | 物料库存：充足</div><p class="warn-text">AI缺料预警：无物料短缺</div></div>
+            <div class="w60"><div class="card"><div class="card-title">人员班组与任务看板</div><div class="num">人力缺口：研发工程师 2人</div><table class="table"><tr><th>人员</th><th>岗位</th><th>任务完成率</th></tr><tr><td>张三</td><td>项目经理</td><td>100%</td></tr><tr><td>李四</td><td>研发</td><td>85%</td></tr></table></div></div>
+        </div>
+        <div class="card footer"><p class="text">现场问题：技术难点2个 | 需求疑问1个</p><p class="text">验收资料完成率：75%</p><button class="btn">生成施工日报</button><button class="btn btn-success">AI整理验收资料</button></div>
+    </div>
+
+    <script>
+        function switchPage(num){
+            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+            document.getElementById('page'+num).classList.add('active');
+            document.querySelectorAll('.tab')[num-1].classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>甲方视角 · AI项目全局管控驾驶舱</title>
+    <link rel="stylesheet" href="css/common.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        /* ===== 三列主布局 ===== */
+        .main-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        /* ===== 顶部KPI指标带 ===== */
+        .top-kpi-bar {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg);
+            background: linear-gradient(180deg,
+                rgba(0, 212, 255, 0.06) 0%,
+                rgba(0, 212, 255, 0.02) 100%);
+            border: 1px solid var(--bg-border);
+            border-radius: var(--radius-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* KPI顶部发光线 */
+        .top-kpi-bar::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), var(--warning-color), transparent);
+        }
+
+        .kpi-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) 0;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(180deg, #fff, var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        /* ===== 左侧列 ===== */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        /* AI核心研判区 */
+        .ai-gauges-row {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .gauge-chart-box {
+            width: 160px;
+            height: 110px;
+        }
+
+        .ai-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+
+        .ai-metric-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            text-align: center;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .ai-metric-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .ai-metric-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: var(--spacing-xs);
+        }
+
+        /* 投资与资金管控 */
+        .invest-chart-box {
+            width: 100%;
+            height: 180px;
+        }
+
+        .mini-donuts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+
+        .mini-donut-item {
+            text-align: center;
+        }
+
+        .mini-donut-chart {
+            width: 100%;
+            height: 100px;
+        }
+
+        /* ===== 中间列 ===== */
+        .center-column {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .gantt-chart-box {
+            width: 100%;
+            height: 240px;
+        }
+
+        .issue-chart-box {
+            width: 100%;
+            height: 180px;
+        }
+
+        .issue-legend {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-sm);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* ===== 右侧列 ===== */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .progress-chart-box {
+            width: 100%;
+            height: 200px;
+        }
+
+        .resource-chart-box {
+            width: 100%;
+            height: 200px;
+        }
+
+        /* 右下环形图区域 */
+        .donut-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+
+        .donut-item {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .donut-chart-box {
+            width: 100%;
+            height: 130px;
+        }
+
+        .donut-label-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: var(--spacing-xs);
+        }
+
+        /* ===== 卡片淡入动画 ===== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 1400px) {
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .top-kpi-bar { grid-column: 1 / -1; }
+            .center-column { grid-column: 1 / -1; }
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .top-kpi-bar { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <!-- ===== 顶部标题栏 ===== -->
+        <header class="header">
+            <div class="header-title">
+                <h1>甲方视角 · AI项目全局管控驾驶舱</h1>
+                <span class="ai-badge">智能研判</span>
+            </div>
+            <div class="header-info">
+                <div class="header-info-item">
+                    <span class="header-info-label">项目</span>
+                    <span class="header-info-value">智慧城市大数据平台</span>
+                </div>
+                <div class="header-info-item">
+                    <span class="header-info-label">编号</span>
+                    <span class="header-info-value">ZC-2024-001</span>
+                </div>
+                <div class="header-info-item">
+                    <span class="header-info-label">周期</span>
+                    <span class="header-info-value">2024.01-2025.06</span>
+                </div>
+                <div class="header-info-item">
+                    <span class="header-info-label">阶段</span>
+                    <span class="header-info-value">系统集成</span>
+                </div>
+                <div class="header-info-item">
+                    <span class="ai-rating warning">⚠ 预警</span>
+                </div>
+                <div class="header-info-item">
+                    <span class="header-info-label" id="updateTime">--</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ===== 主体三列网格 ===== -->
+        <main class="main-grid">
+
+            <!-- ====== 顶部6个KPI卡片 ====== -->
+            <section class="top-kpi-bar">
+                <div class="kpi-item">
+                    <div class="kpi-value">95.5</div>
+                    <div class="kpi-label">综合评分</div>
+                </div>
+                <div class="kpi-item">
+                    <div class="kpi-value" style="-webkit-text-fill-color: var(--primary-color); color: var(--primary-color);">9341<span style="font-size:14px;">万</span></div>
+                    <div class="kpi-label">投资总额</div>
+                </div>
+                <div class="kpi-item">
+                    <div class="kpi-value" style="-webkit-text-fill-color: var(--secondary-color); color: var(--secondary-color);">1072<span style="font-size:14px;">万</span></div>
+                    <div class="kpi-label">已完成投资</div>
+                </div>
+                <div class="kpi-item">
+                    <div class="kpi-value" style="-webkit-text-fill-color: var(--warning-color); color: var(--warning-color);">216<span style="font-size:14px;">天</span></div>
+                    <div class="kpi-label">进度偏差</div>
+                </div>
+                <div class="kpi-item">
+                    <div class="kpi-value" style="-webkit-text-fill-color: var(--danger-color); color: var(--danger-color);">3023</div>
+                    <div class="kpi-label">风险预警</div>
+                </div>
+                <div class="kpi-item">
+                    <div class="kpi-value">4000<span style="font-size:14px;">+</span></div>
+                    <div class="kpi-label">问题总数</div>
+                </div>
+            </section>
+
+            <!-- ====== 左侧列 ====== -->
+            <div class="left-column">
+
+                <!-- 左上：AI核心智能研判区 -->
+                <div class="card">
+                    <div class="card-title">AI核心智能研判区</div>
+                    <!-- 两个半圆仪表盘 -->
+                    <div class="ai-gauges-row">
+                        <div class="gauge-chart-box" id="gaugeCyan"></div>
+                        <div class="gauge-chart-box" id="gaugeRed"></div>
+                    </div>
+                    <!-- 两个指标卡片 -->
+                    <div class="ai-metrics">
+                        <div class="ai-metric-box">
+                            <div class="ai-metric-value" style="color: var(--primary-color);">59</div>
+                            <div class="ai-metric-label">AI检测问题数</div>
+                        </div>
+                        <div class="ai-metric-box">
+                            <div class="ai-metric-value" style="color: var(--danger-color);">-33%</div>
+                            <div class="ai-metric-label">效率变化</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 左下：投资与资金管控 -->
+                <div class="card">
+                    <div class="card-title">投资与资金管控</div>
+                    <!-- 横向柱状图 -->
+                    <div class="invest-chart-box" id="investBar"></div>
+                    <!-- 3个小环形图 -->
+                    <div class="mini-donuts">
+                        <div class="mini-donut-item">
+                            <div class="mini-donut-chart" id="donutBudget"></div>
+                            <div class="donut-label-text">预算执行</div>
+                        </div>
+                        <div class="mini-donut-item">
+                            <div class="mini-donut-chart" id="donutPayment"></div>
+                            <div class="donut-label-text">拨付进度</div>
+                        </div>
+                        <div class="mini-donut-item">
+                            <div class="mini-donut-chart" id="donutContract"></div>
+                            <div class="donut-label-text">合同执行</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 中间列 ====== -->
+            <div class="center-column">
+
+                <!-- 项目甘特总图 -->
+                <div class="card">
+                    <div class="card-title">项目甘特总图</div>
+                    <div class="gantt-chart-box" id="ganttChart"></div>
+                </div>
+
+                <!-- 问题闭环与协同督办 -->
+                <div class="card">
+                    <div class="card-title">问题闭环与协同督办</div>
+                    <div class="issue-chart-box" id="issueChart"></div>
+                    <div class="issue-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background:#ff4d4f;"></span>
+                            <span>未处理</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background:#ff9f43;"></span>
+                            <span>处理中</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background:#00d4ff;"></span>
+                            <span>已解决</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 右侧列 ====== -->
+            <div class="right-column">
+
+                <!-- 右上：全维度进度可视化 -->
+                <div class="card">
+                    <div class="card-title">全维度进度可视化</div>
+                    <div class="progress-chart-box" id="progressChart"></div>
+                </div>
+
+                <!-- 右中：资源与人员履约看板 -->
+                <div class="card">
+                    <div class="card-title">资源与人员履约看板</div>
+                    <div class="resource-chart-box" id="resourceChart"></div>
+                </div>
+
+                <!-- 右下：资源与人员履约看板2 -->
+                <div class="card">
+                    <div class="card-title">资源与人员履约看板</div>
+                    <div class="donut-pair">
+                        <div class="donut-item">
+                            <div class="donut-chart-box" id="donutCompliance"></div>
+                            <div class="donut-label-text">履约进度</div>
+                        </div>
+                        <div class="donut-item">
+                            <div class="donut-chart-box" id="donutFund"></div>
+                            <div class="donut-label-text">资金拨付</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+    /* ========================================
+     * 工具函数
+     * ======================================== */
+
+    // ECharts 公共深色主题配置
+    const DARK_TEXT = 'rgba(255,255,255,0.6)';
+    const AXIS_LINE = 'rgba(0,212,255,0.15)';
+
+    // 实时时钟
+    function updateClock() {
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        document.getElementById('updateTime').textContent =
+            `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // 存储所有 ECharts 实例，方便统一 resize
+    const charts = [];
+
+    function createChart(domId) {
+        const dom = document.getElementById(domId);
+        if (!dom) return null;
+        const chart = echarts.init(dom);
+        charts.push(chart);
+        return chart;
+    }
+
+    // 统一 resize
+    window.addEventListener('resize', () => {
+        charts.forEach(c => c.resize());
+    });
+
+    /* ========================================
+     * 1. 左上 - AI核心研判：两个半圆仪表盘
+     * ======================================== */
+
+    // 通用半圆仪表盘配置生成器
+    function gaugeOption(value, color, title) {
+        return {
+            series: [{
+                type: 'gauge',
+                startAngle: 200,
+                endAngle: -20,
+                min: 0,
+                max: 100,
+                radius: '95%',
+                center: ['50%', '60%'],
+                // 不显示外圈刻度
+                axisLine: {
+                    lineStyle: {
+                        width: 12,
+                        color: [[value / 100, color], [1, 'rgba(255,255,255,0.08)']]
+                    }
+                },
+                pointer: { show: false },
+                axisTick: { show: false },
+                splitLine: { show: false },
+                axisLabel: { show: false },
+                // 中心数值
+                detail: {
+                    valueAnimation: true,
+                    formatter: '{value}%',
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: '#fff',
+                    offsetCenter: [0, '10%']
+                },
+                title: {
+                    show: true,
+                    offsetCenter: [0, '45%'],
+                    fontSize: 11,
+                    color: DARK_TEXT
+                },
+                data: [{ value, name: title }]
+            }]
+        };
+    }
+
+    const gaugeCyanChart = createChart('gaugeCyan');
+    gaugeCyanChart && gaugeCyanChart.setOption(gaugeOption(75, '#00d4ff', '模型准确率'));
+
+    const gaugeRedChart = createChart('gaugeRed');
+    gaugeRedChart && gaugeRedChart.setOption(gaugeOption(70, '#ff4d4f', '风险等级'));
+
+    /* ========================================
+     * 2. 左下 - 投资与资金管控：横向柱状图
+     * ======================================== */
+    const investBarChart = createChart('investBar');
+    investBarChart && investBarChart.setOption({
+        grid: { left: 80, right: 30, top: 10, bottom: 20 },
+        xAxis: {
+            type: 'value',
+            max: 100,
+            axisLine: { show: false },
+            axisTick: { show: false },
+            splitLine: { lineStyle: { color: AXIS_LINE } },
+            axisLabel: { color: DARK_TEXT, fontSize: 10, formatter: '{value}%' }
+        },
+        yAxis: {
+            type: 'category',
+            data: ['验收备案', '培训运维', '系统集成', '软件开发', '硬件采购'],
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 11 }
+        },
+        series: [{
+            type: 'bar',
+            barWidth: 14,
+            data: [
+                { value: 10, itemStyle: { color: 'rgba(255,255,255,0.2)' } },
+                { value: 25, itemStyle: { color: '#ff9f43' } },
+                { value: 45, itemStyle: { color: '#ff9f43' } },
+                { value: 72, itemStyle: { color: '#00d4ff' } },
+                { value: 85, itemStyle: { color: '#00d4ff' } }
+            ],
+            label: {
+                show: true,
+                position: 'right',
+                color: '#fff',
+                fontSize: 11,
+                formatter: '{c}%'
+            },
+            // 圆角柱子
+            itemStyle: { borderRadius: [0, 4, 4, 0] }
+        }]
+    });
+
+    /* ========================================
+     * 3. 左下 - 3个小环形图
+     * ======================================== */
+
+    // 通用环形图配置
+    function miniDonutOption(value, color) {
+        return {
+            series: [{
+                type: 'pie',
+                radius: ['60%', '80%'],
+                center: ['50%', '50%'],
+                avoidLabelOverlap: false,
+                label: {
+                    show: true,
+                    position: 'center',
+                    formatter: value + '%',
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: '#fff'
+                },
+                labelLine: { show: false },
+                data: [
+                    { value, itemStyle: { color } },
+                    { value: 100 - value, itemStyle: { color: 'rgba(255,255,255,0.06)' } }
+                ],
+                // 旋转起始角度
+                startAngle: 90,
+                silent: true
+            }]
+        };
+    }
+
+    const donutBudgetChart = createChart('donutBudget');
+    donutBudgetChart && donutBudgetChart.setOption(miniDonutOption(25, '#00d4ff'));
+
+    const donutPaymentChart = createChart('donutPayment');
+    donutPaymentChart && donutPaymentChart.setOption(miniDonutOption(33, '#ff9f43'));
+
+    const donutContractChart = createChart('donutContract');
+    donutContractChart && donutContractChart.setOption(miniDonutOption(50, '#00ff88'));
+
+    /* ========================================
+     * 4. 中间 - 项目甘特总图（自定义时间条）
+     * ======================================== */
+    const ganttChart = createChart('ganttChart');
+
+    // 甘特图数据：[任务名, 开始月, 持续月, 状态(完成/进行中/滞后/待办), 完成度]
+    const ganttData = [
+        ['需求分析', 0,  2, 'completed', 100],
+        ['方案设计', 1,  3, 'completed', 100],
+        ['一期建设', 3,  5, 'completed', 100],
+        ['二期建设', 6,  5, 'completed', 100],
+        ['硬件部署', 8,  4, 'delayed',   85],
+        ['集成调试', 10, 3, 'inProgress',60],
+        ['验收交付', 13, 3, 'pending',   0]
+    ];
+
+    // 状态颜色映射
+    const STATUS_COLOR = {
+        completed:  '#00d4ff',
+        inProgress: '#ff9f43',
+        delayed:    '#ff4d4f',
+        pending:    'rgba(255,255,255,0.15)'
+    };
+    const STATUS_LABEL = {
+        completed: '完成',
+        inProgress: '进行中',
+        delayed: '滞后',
+        pending: '待办'
+    };
+
+    // 转换为 ECharts custom series 数据
+    const ganttTotalMonths = 18; // 2024.01 ~ 2025.06
+    const ganttCategories = ganttData.map(d => d[0]);
+    const ganttSeriesData = ganttData.map((d, i) => ({
+        value: [d[1], i, d[2]], // [startMonth, rowIndex, duration]
+        itemStyle: { color: STATUS_COLOR[d[3]] },
+        status: d[3],
+        progress: d[4]
+    }));
+
+    ganttChart && ganttChart.setOption({
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            backgroundColor: 'rgba(10,15,26,0.9)',
+            borderColor: 'rgba(0,212,255,0.3)',
+            textStyle: { color: '#fff', fontSize: 12 },
+            formatter: function(params) {
+                const p = params[0];
+                if (!p) return '';
+                const d = ganttData[p.dataIndex];
+                return `<b>${d[0]}</b><br/>状态：${STATUS_LABEL[d[3]]}<br/>完成度：${d[4]}%`;
+            }
+        },
+        grid: { left: 80, right: 20, top: 10, bottom: 30 },
+        xAxis: {
+            type: 'value',
+            min: 0,
+            max: ganttTotalMonths,
+            axisLine: { lineStyle: { color: AXIS_LINE } },
+            axisTick: { show: false },
+            splitLine: { lineStyle: { color: AXIS_LINE } },
+            axisLabel: {
+                color: DARK_TEXT,
+                fontSize: 10,
+                formatter: function(v) {
+                    const m = v % 12;
+                    const y = v < 12 ? '2024' : '2025';
+                    return (m === 0 ? '1' : m + 1) + '月';
+                }
+            }
+        },
+        yAxis: {
+            type: 'category',
+            data: ganttCategories,
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 11 }
+        },
+        series: [{
+            type: 'custom',
+            renderItem: function(params, api) {
+                const start = api.coord([api.value(0), api.value(1)]);
+                const end   = api.coord([api.value(0) + api.value(2), api.value(1)]);
+                const h = api.size([0, 1])[1] * 0.5;
+                const rectShape = echarts.graphic.clipRectByRect(
+                    { x: start[0], y: start[1] - h / 2, width: end[0] - start[0], height: h },
+                    { x: params.coordSys.x, y: params.coordSys.y, width: params.coordSys.width, height: params.coordSys.height }
+                );
+                return rectShape && {
+                    type: 'rect',
+                    transition: ['shape'],
+                    shape: rectShape,
+                    style: api.style(),
+                    // 在条内显示完成度
+                    textContent: {
+                        type: 'text',
+                        style: {
+                            text: api.value(2) > 2 ? STATUS_LABEL[api.value(3)] || '' : '',
+                            fill: '#fff',
+                            fontSize: 10
+                        }
+                    }
+                };
+            },
+            data: ganttSeriesData.map(d => ({
+                value: [d.value[0], d.value[1], d.value[2]],
+                itemStyle: d.itemStyle
+            })),
+            encode: { x: [0, 2], y: 1 },
+            itemStyle: { borderRadius: 3 }
+        }]
+    });
+
+    /* ========================================
+     * 5. 中间底部 - 问题闭环与协同督办（堆叠面积图）
+     * ======================================== */
+    const issueChart = createChart('issueChart');
+    const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+    issueChart && issueChart.setOption({
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(10,15,26,0.9)',
+            borderColor: 'rgba(0,212,255,0.3)',
+            textStyle: { color: '#fff', fontSize: 12 }
+        },
+        legend: { show: false },
+        grid: { left: 40, right: 20, top: 10, bottom: 30 },
+        xAxis: {
+            type: 'category',
+            data: months,
+            boundaryGap: false,
+            axisLine: { lineStyle: { color: AXIS_LINE } },
+            axisTick: { show: false },
+            axisLabel: { color: DARK_TEXT, fontSize: 10 }
+        },
+        yAxis: {
+            type: 'value',
+            axisLine: { show: false },
+            axisTick: { show: false },
+            splitLine: { lineStyle: { color: AXIS_LINE } },
+            axisLabel: { color: DARK_TEXT, fontSize: 10 }
+        },
+        series: [
+            {
+                name: '未处理',
+                type: 'line',
+                stack: 'total',
+                smooth: true,
+                symbol: 'none',
+                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: 'rgba(255,77,79,0.6)' },
+                    { offset: 1, color: 'rgba(255,77,79,0.05)' }
+                ])},
+                lineStyle: { color: '#ff4d4f', width: 1.5 },
+                data: [30, 35, 28, 40, 38, 25, 20, 22, 18, 15, 12, 10]
+            },
+            {
+                name: '处理中',
+                type: 'line',
+                stack: 'total',
+                smooth: true,
+                symbol: 'none',
+                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: 'rgba(255,159,67,0.6)' },
+                    { offset: 1, color: 'rgba(255,159,67,0.05)' }
+                ])},
+                lineStyle: { color: '#ff9f43', width: 1.5 },
+                data: [20, 25, 30, 22, 28, 35, 30, 25, 20, 18, 15, 12]
+            },
+            {
+                name: '已解决',
+                type: 'line',
+                stack: 'total',
+                smooth: true,
+                symbol: 'none',
+                areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: 'rgba(0,212,255,0.6)' },
+                    { offset: 1, color: 'rgba(0,212,255,0.05)' }
+                ])},
+                lineStyle: { color: '#00d4ff', width: 1.5 },
+                data: [10, 15, 20, 30, 35, 45, 55, 60, 65, 70, 75, 80]
+            }
+        ]
+    });
+
+    /* ========================================
+     * 6. 右上 - 全维度进度可视化（分组柱状图）
+     * ======================================== */
+    const progressChart = createChart('progressChart');
+    const progressCategories = ['需求分析', '方案设计', '一期建设', '二期建设', '硬件部署', '集成调试'];
+
+    progressChart && progressChart.setOption({
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(10,15,26,0.9)',
+            borderColor: 'rgba(0,212,255,0.3)',
+            textStyle: { color: '#fff', fontSize: 12 }
+        },
+        legend: {
+            top: 0,
+            right: 0,
+            textStyle: { color: DARK_TEXT, fontSize: 10 },
+            itemWidth: 12,
+            itemHeight: 8
+        },
+        grid: { left: 70, right: 15, top: 30, bottom: 25 },
+        xAxis: {
+            type: 'value',
+            max: 100,
+            axisLine: { show: false },
+            axisTick: { show: false },
+            splitLine: { lineStyle: { color: AXIS_LINE } },
+            axisLabel: { color: DARK_TEXT, fontSize: 10, formatter: '{value}%' }
+        },
+        yAxis: {
+            type: 'category',
+            data: progressCategories,
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 10 }
+        },
+        series: [
+            {
+                name: '计划进度',
+                type: 'bar',
+                barWidth: 8,
+                barGap: '30%',
+                data: [100, 100, 100, 90, 80, 70],
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#00d4ff' },
+                        { offset: 1, color: 'rgba(0,212,255,0.3)' }
+                    ]),
+                    borderRadius: [0, 3, 3, 0]
+                },
+                label: { show: false }
+            },
+            {
+                name: '实际进度',
+                type: 'bar',
+                barWidth: 8,
+                data: [100, 100, 100, 75, 60, 45],
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#ff9f43' },
+                        { offset: 1, color: 'rgba(255,159,67,0.3)' }
+                    ]),
+                    borderRadius: [0, 3, 3, 0]
+                },
+                label: { show: false }
+            }
+        ]
+    });
+
+    /* ========================================
+     * 7. 右中 - 资源与人员履约看板（分组柱状图）
+     * ======================================== */
+    const resourceChart = createChart('resourceChart');
+    const resourceCategories = ['人员到位', '设备到场', '环境达标', '资料完整'];
+
+    resourceChart && resourceChart.setOption({
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(10,15,26,0.9)',
+            borderColor: 'rgba(0,212,255,0.3)',
+            textStyle: { color: '#fff', fontSize: 12 }
+        },
+        legend: {
+            top: 0,
+            right: 0,
+            textStyle: { color: DARK_TEXT, fontSize: 10 },
+            itemWidth: 12,
+            itemHeight: 8
+        },
+        grid: { left: 70, right: 15, top: 30, bottom: 25 },
+        xAxis: {
+            type: 'value',
+            max: 100,
+            axisLine: { show: false },
+            axisTick: { show: false },
+            splitLine: { lineStyle: { color: AXIS_LINE } },
+            axisLabel: { color: DARK_TEXT, fontSize: 10 }
+        },
+        yAxis: {
+            type: 'category',
+            data: resourceCategories,
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { color: 'rgba(255,255,255,0.75)', fontSize: 11 }
+        },
+        series: [
+            {
+                name: '计划',
+                type: 'bar',
+                barWidth: 10,
+                barGap: '30%',
+                data: [100, 100, 100, 100],
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#00d4ff' },
+                        { offset: 1, color: 'rgba(0,212,255,0.2)' }
+                    ]),
+                    borderRadius: [0, 4, 4, 0]
+                }
+            },
+            {
+                name: '实际',
+                type: 'bar',
+                barWidth: 10,
+                data: [85, 92, 78, 88],
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: '#00ff88' },
+                        { offset: 1, color: 'rgba(0,255,136,0.2)' }
+                    ]),
+                    borderRadius: [0, 4, 4, 0]
+                },
+                // 在柱子右侧显示数值
+                label: {
+                    show: true,
+                    position: 'right',
+                    color: '#fff',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    formatter: '{c}%'
+                }
+            }
+        ]
+    });
+
+    /* ========================================
+     * 8. 右下 - 2个环形图（履约进度25%、资金拨付20%）
+     * ======================================== */
+    function largeDonutOption(value, color) {
+        return {
+            series: [{
+                type: 'pie',
+                radius: ['55%', '75%'],
+                center: ['50%', '50%'],
+                avoidLabelOverlap: false,
+                label: {
+                    show: true,
+                    position: 'center',
+                    formatter: value + '%',
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: '#fff'
+                },
+                labelLine: { show: false },
+                emphasis: {
+                    scale: true,
+                    scaleSize: 5
+                },
+                data: [
+                    {
+                        value,
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 1, [
+                                { offset: 0, color: color },
+                                { offset: 1, color: color.replace(')', ',0.4)').replace('rgb', 'rgba') }
+                            ]),
+                            shadowColor: color,
+                            shadowBlur: 10
+                        }
+                    },
+                    { value: 100 - value, itemStyle: { color: 'rgba(255,255,255,0.06)' } }
+                ],
+                startAngle: 90,
+                silent: false
+            }]
+        };
+    }
+
+    const donutComplianceChart = createChart('donutCompliance');
+    donutComplianceChart && donutComplianceChart.setOption(largeDonutOption(25, '#00d4ff'));
+
+    const donutFundChart = createChart('donutFund');
+    donutFundChart && donutFundChart.setOption(largeDonutOption(20, '#ff9f43'));
+    </script>
+</body>
+</html>

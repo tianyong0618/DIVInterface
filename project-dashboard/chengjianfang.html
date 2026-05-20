@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>承建方视角 · AI项目落地执行作战大屏</title>
+    <link rel="stylesheet" href="css/common.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        /* ===== 主布局 ===== */
+        .main-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        /* ===== 顶部指挥栏 ===== */
+        .command-header {
+            background: linear-gradient(90deg,
+                rgba(255, 77, 79, 0.08) 0%,
+                rgba(0, 212, 255, 0.08) 50%,
+                rgba(0, 255, 136, 0.08) 100%);
+            border: 1px solid var(--bg-border);
+        }
+        .command-header::before {
+            background: linear-gradient(90deg,
+                var(--danger-color) 0%,
+                var(--primary-color) 50%,
+                var(--secondary-color) 100%);
+        }
+
+        /* 倒计时框 */
+        .countdown-box {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 8px 16px;
+            background: rgba(255, 77, 79, 0.1);
+            border: 1px solid rgba(255, 77, 79, 0.3);
+            border-radius: var(--radius-md);
+        }
+        .countdown-label { font-size: 12px; color: var(--text-muted); }
+        .countdown-value { font-size: 20px; font-weight: 700; color: var(--danger-color); }
+
+        /* 考核分框 */
+        .score-box {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 8px 16px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: var(--radius-md);
+        }
+        .score-label { font-size: 12px; color: var(--text-muted); }
+        .score-value { font-size: 20px; font-weight: 700; color: var(--secondary-color); }
+
+        /* ===== KPI 卡片条 ===== */
+        .top-kpi-bar {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--bg-border);
+            border-radius: var(--radius-lg);
+        }
+        .kpi-card {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: var(--radius-md);
+            border-left: 3px solid var(--primary-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.15);
+        }
+        .kpi-card:nth-child(2) { border-left-color: var(--secondary-color); }
+        .kpi-card:nth-child(3) { border-left-color: var(--warning-color); }
+        .kpi-card:nth-child(4) { border-left-color: var(--danger-color); }
+        .kpi-card:nth-child(5) { border-left-color: var(--purple-color); }
+
+        .kpi-icon { font-size: 28px; }
+        .kpi-content { flex: 1; }
+        .kpi-value-new { font-size: 24px; font-weight: 700; }
+        .kpi-label-new { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        /* ===== ECharts 容器通用 ===== */
+        .echart-box { width: 100%; height: 220px; }
+        .echart-box-sm { width: 100%; height: 160px; }
+        .echart-box-lg { width: 100%; height: 280px; }
+
+        /* ===== 左列 ===== */
+        .left-column { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+
+        /* AI 排程建议列表 */
+        .ai-suggest-list { display: flex; flex-direction: column; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
+        .ai-suggest-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: var(--radius-sm);
+            border-left: 2px solid var(--primary-color);
+            transition: background 0.3s;
+        }
+        .ai-suggest-item:hover { background: rgba(0, 212, 255, 0.1); }
+        .ai-suggest-item.orange { border-left-color: var(--warning-color); }
+        .ai-suggest-icon { font-size: 14px; flex-shrink: 0; }
+        .ai-suggest-title { font-size: 12px; color: var(--text-primary); }
+        .ai-suggest-desc { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+        /* 成本管控 - 环形图行 */
+        .cost-ring-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
+        }
+        .cost-ring-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .cost-ring-label { font-size: 10px; color: var(--text-muted); }
+
+        /* ===== 中间列 - 六边形架构 ===== */
+        .center-column { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+
+        .hex-arch-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 520px;
+            padding: var(--spacing-md) 0;
+        }
+
+        /* 六边形基础样式 */
+        .hex-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 150, 255, 0.05) 100%);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            transition: transform 0.3s ease, filter 0.3s ease;
+            cursor: pointer;
+        }
+        .hex-item::before {
+            content: '';
+            position: absolute;
+            inset: 1px;
+            background: linear-gradient(180deg, rgba(0, 212, 255, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        .hex-item:hover { transform: scale(1.08); filter: brightness(1.3); }
+
+        /* 橙色六边形 */
+        .hex-item.orange {
+            background: linear-gradient(180deg, rgba(255, 159, 67, 0.15) 0%, rgba(255, 107, 53, 0.05) 100%);
+        }
+        .hex-item.orange::before {
+            background: linear-gradient(180deg, rgba(255, 159, 67, 0.2) 0%, rgba(255, 107, 53, 0.1) 100%);
+        }
+
+        /* 绿色六边形（数据中台） */
+        .hex-item.green {
+            background: linear-gradient(180deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 200, 100, 0.1) 100%);
+        }
+        .hex-item.green::before {
+            background: linear-gradient(180deg, rgba(0, 255, 136, 0.25) 0%, rgba(0, 200, 100, 0.15) 100%);
+        }
+
+        .hex-value { font-size: 16px; font-weight: 700; z-index: 1; }
+        .hex-label { font-size: 9px; color: var(--text-muted); z-index: 1; text-align: center; line-height: 1.2; padding: 0 4px; }
+
+        /* 中心大六边形 */
+        .hex-center {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, rgba(0, 212, 255, 0.25) 0%, rgba(0, 150, 255, 0.1) 100%);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            transition: transform 0.3s ease;
+        }
+        .hex-center::before {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            background: linear-gradient(180deg, rgba(0, 212, 255, 0.3) 0%, rgba(168, 85, 247, 0.15) 100%);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        .hex-center:hover { transform: scale(1.05); }
+        .hex-center-value { font-size: 26px; font-weight: 700; z-index: 1; }
+        .hex-center-label { font-size: 12px; color: var(--text-secondary); z-index: 1; }
+
+        /* 六边形网格布局 */
+        .hex-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .hex-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        /* 连接线 SVG 覆盖层 */
+        .hex-lines {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== 右列 ===== */
+        .right-column { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+
+        /* 人员组织架构 */
+        .personnel-org {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+        .org-level { display: flex; gap: var(--spacing-md); }
+        .org-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: var(--radius-md);
+        }
+        .org-node.leader {
+            background: rgba(255, 77, 79, 0.1);
+            border-color: rgba(255, 77, 79, 0.2);
+        }
+        .org-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--purple-color));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 600;
+        }
+        .org-node.leader .org-avatar {
+            background: linear-gradient(135deg, var(--danger-color), var(--warning-color));
+        }
+        .org-name { font-size: 11px; font-weight: 500; }
+        .org-role { font-size: 9px; color: var(--text-muted); }
+
+        /* ===== 底部资源能耗 ===== */
+        .bottom-section {
+            grid-column: 1 / -1;
+        }
+        .energy-gauges {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-lg);
+            align-items: center;
+        }
+
+        /* ===== 页面加载动画 ===== */
+        .card {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardFadeIn 0.6s ease forwards;
+        }
+        @keyframes cardFadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 1400px) {
+            .main-grid { grid-template-columns: 1fr 1fr; }
+            .center-column { grid-column: 1 / -1; }
+        }
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .top-kpi-bar { grid-template-columns: repeat(3, 1fr); }
+            .energy-gauges { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- ========== 顶部标题栏 ========== -->
+    <header class="header command-header">
+        <div class="header-title">
+            <h1>承建方视角 · AI项目落地执行作战大屏</h1>
+            <span class="ai-badge">智能排程</span>
+        </div>
+        <div class="header-info">
+            <div class="header-info-item">
+                <span class="header-info-label">项目</span>
+                <span class="header-info-value">智慧城市大数据平台</span>
+            </div>
+            <div class="header-info-item">
+                <span class="header-info-label">甲方</span>
+                <span class="header-info-value">市大数据管理局</span>
+            </div>
+            <div class="header-info-item">
+                <span class="header-info-label">阶段</span>
+                <span class="header-info-value">系统集成</span>
+            </div>
+            <div class="countdown-box">
+                <span class="countdown-label">距竣工</span>
+                <span class="countdown-value">142天</span>
+            </div>
+            <div class="score-box">
+                <span class="score-label">考核</span>
+                <span class="score-value">85分</span>
+            </div>
+            <div class="header-info-item">
+                <span class="header-info-label" id="updateTime"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========== 5个KPI卡片 ========== -->
+    <section class="top-kpi-bar">
+        <div class="kpi-card">
+            <span class="kpi-icon">&#x1F3D7;</span>
+            <div class="kpi-content">
+                <div class="kpi-value-new" style="color: var(--primary-color);">350</div>
+                <div class="kpi-label-new">项目总数</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-icon">&#x1F3AF;</span>
+            <div class="kpi-content">
+                <div class="kpi-value-new" style="color: var(--secondary-color);">74.5%</div>
+                <div class="kpi-label-new">完成进度</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-icon">&#x1F4E6;</span>
+            <div class="kpi-content">
+                <div class="kpi-value-new" style="color: var(--warning-color);">252</div>
+                <div class="kpi-label-new">物资到位率</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-icon">&#x26A1;</span>
+            <div class="kpi-content">
+                <div class="kpi-value-new" style="color: var(--danger-color);">283</div>
+                <div class="kpi-label-new">风险预警</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-icon">&#x1F3C6;</span>
+            <div class="kpi-content">
+                <div class="kpi-value-new" style="color: var(--purple-color);">22.1%</div>
+                <div class="kpi-label-new">质量合格率</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== 三列主体网格 ========== -->
+    <main class="main-grid">
+
+        <!-- ===== 左列 ===== -->
+        <div class="left-column">
+
+            <!-- 左上：AI智能排程与进度调度中心 -->
+            <div class="card" style="animation-delay: 0.1s;">
+                <div class="card-title">AI智能排程与进度调度中心</div>
+                <div id="chartSchedule" class="echart-box"></div>
+                <div class="ai-suggest-list">
+                    <div class="ai-suggest-item">
+                        <span class="ai-suggest-icon">&#x26A1;</span>
+                        <div>
+                            <div class="ai-suggest-title">滞后工序抢工方案</div>
+                            <div class="ai-suggest-desc">建议安全系统与接口并行开发</div>
+                        </div>
+                    </div>
+                    <div class="ai-suggest-item orange">
+                        <span class="ai-suggest-icon">&#x1F504;</span>
+                        <div>
+                            <div class="ai-suggest-title">并行施工建议</div>
+                            <div class="ai-suggest-desc">数据迁移与压力测试同步</div>
+                        </div>
+                    </div>
+                    <div class="ai-suggest-item">
+                        <span class="ai-suggest-icon">&#x1F465;</span>
+                        <div>
+                            <div class="ai-suggest-title">人员调配优化</div>
+                            <div class="ai-suggest-desc">抽调1人支援安全系统</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 左下：内部成本与物资管控 -->
+            <div class="card" style="animation-delay: 0.2s;">
+                <div class="card-title">内部成本与物资管控</div>
+                <div id="chartCost" class="echart-box"></div>
+                <div class="cost-ring-row">
+                    <div class="cost-ring-item">
+                        <div id="chartRing1" class="echart-box-sm"></div>
+                        <div class="cost-ring-label">人力占比</div>
+                    </div>
+                    <div class="cost-ring-item">
+                        <div id="chartRing2" class="echart-box-sm"></div>
+                        <div class="cost-ring-label">物料占比</div>
+                    </div>
+                    <div class="cost-ring-item">
+                        <div id="chartRing3" class="echart-box-sm"></div>
+                        <div class="cost-ring-label">设备占比</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 中间列 - 六边形架构 ===== -->
+        <div class="center-column">
+            <div class="card hex-arch-container" style="animation-delay: 0.15s;">
+                <div class="card-title" style="position: absolute; top: 12px; left: 16px;">核心业务架构</div>
+
+                <!-- 连接线 SVG -->
+                <svg class="hex-lines" width="420" height="520" viewBox="0 0 420 520">
+                    <!-- 中心到周围6个六边形的连线 -->
+                    <line x1="210" y1="210" x2="100" y2="100" stroke="rgba(0,212,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <line x1="210" y1="210" x2="210" y2="80" stroke="rgba(0,212,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <line x1="210" y1="210" x2="320" y2="100" stroke="rgba(0,212,255,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <line x1="210" y1="210" x2="100" y2="340" stroke="rgba(255,159,67,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <line x1="210" y1="210" x2="210" y2="360" stroke="rgba(255,159,67,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <line x1="210" y1="210" x2="320" y2="340" stroke="rgba(255,159,67,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+                    <!-- 中心到顶部"智能中台" -->
+                    <line x1="210" y1="160" x2="210" y2="30" stroke="rgba(0,212,255,0.4)" stroke-width="2"/>
+                    <!-- 中心到底部"数据中台" -->
+                    <line x1="210" y1="270" x2="210" y2="430" stroke="rgba(0,255,136,0.4)" stroke-width="2"/>
+                </svg>
+
+                <div class="hex-grid" style="position: relative; z-index: 1;">
+                    <!-- 顶部：智能中台 -->
+                    <div class="hex-row">
+                        <div class="hex-item" style="width: 110px; height: 128px;">
+                            <div class="hex-value" style="color: var(--primary-color); font-size: 20px;">102018</div>
+                            <div class="hex-label" style="font-size: 11px;">智能中台</div>
+                        </div>
+                    </div>
+
+                    <!-- 上排3个小六边形 -->
+                    <div class="hex-row">
+                        <div class="hex-item" style="width: 90px; height: 104px;">
+                            <div class="hex-value" style="color: var(--primary-color);">3534</div>
+                            <div class="hex-label">智能识别引擎</div>
+                        </div>
+                        <div class="hex-item orange" style="width: 90px; height: 104px;">
+                            <div class="hex-value" style="color: var(--warning-color);">3534</div>
+                            <div class="hex-label">智能预测引擎</div>
+                        </div>
+                        <div class="hex-item" style="width: 90px; height: 104px;">
+                            <div class="hex-value" style="color: var(--primary-color);">3534</div>
+                            <div class="hex-label">智能决策引擎</div>
+                        </div>
+                    </div>
+
+                    <!-- 中心大六边形：AI业务中台 -->
+                    <div class="hex-center" style="width: 140px; height: 162px;">
+                        <div class="hex-center-value" style="color: var(--primary-color);">AI</div>
+                        <div class="hex-center-label">AI业务中台</div>
+                    </div>
+
+                    <!-- 下排3个小六边形 -->
+                    <div class="hex-row">
+                        <div class="hex-item orange" style="width: 90px; height: 104px;">
+                            <div class="hex-value" style="color: var(--warning-color);">3534</div>
+                            <div class="hex-label">AI业务外联<br>智能管理</div>
+                        </div>
+                        <div class="hex-item" style="width: 90px; height: 104px;">
+                            <div class="hex-value" style="color: var(--primary-color);">3534</div>
+                            <div class="hex-label">知识图谱管理</div>
+                        </div>
+                        <div class="hex-item orange" style="width: 90px; height: 104px;">
+                            <div class="hex-value" style="color: var(--warning-color);">3534</div>
+                            <div class="hex-label">智能数据治理</div>
+                        </div>
+                    </div>
+
+                    <!-- 底部：数据中台 -->
+                    <div class="hex-row">
+                        <div class="hex-item green" style="width: 110px; height: 128px;">
+                            <div class="hex-value" style="color: var(--secondary-color); font-size: 20px;">86864</div>
+                            <div class="hex-label" style="font-size: 11px;">数据中台</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 右列 ===== -->
+        <div class="right-column">
+
+            <!-- 右上：分项业务实施管控区 -->
+            <div class="card" style="animation-delay: 0.25s;">
+                <div class="card-title">分项业务实施管控区</div>
+                <div id="chartBusiness" class="echart-box"></div>
+            </div>
+
+            <!-- 右中：人员班组与任务看板 -->
+            <div class="card" style="animation-delay: 0.3s;">
+                <div class="card-title">人员班组与任务看板</div>
+                <!-- 组织架构 -->
+                <div class="personnel-org" style="margin-bottom: var(--spacing-md);">
+                    <div class="org-level">
+                        <div class="org-node leader">
+                            <div class="org-avatar">陈</div>
+                            <div class="org-name">陈经理</div>
+                            <div class="org-role">项目经理</div>
+                        </div>
+                    </div>
+                    <div class="org-level">
+                        <div class="org-node">
+                            <div class="org-avatar">刘</div>
+                            <div class="org-name">刘总监</div>
+                            <div class="org-role">技术负责</div>
+                        </div>
+                        <div class="org-node">
+                            <div class="org-avatar">张</div>
+                            <div class="org-name">张主管</div>
+                            <div class="org-role">实施负责</div>
+                        </div>
+                        <div class="org-node">
+                            <div class="org-avatar">王</div>
+                            <div class="org-name">王主管</div>
+                            <div class="org-role">测试负责</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="chartPersonnel" class="echart-box"></div>
+            </div>
+
+            <!-- 右下：现场问题与风险化解专区 -->
+            <div class="card" style="animation-delay: 0.35s;">
+                <div class="card-title">现场问题与风险化解专区</div>
+                <div id="chartRisk" class="echart-box"></div>
+            </div>
+        </div>
+
+        <!-- ===== 底部：资源能耗统计 ===== -->
+        <section class="bottom-section">
+            <div class="card" style="animation-delay: 0.4s;">
+                <div class="card-title">资源能耗统计</div>
+                <div class="energy-gauges">
+                    <div id="chartGauge1" class="echart-box-lg"></div>
+                    <div id="chartGauge2" class="echart-box-lg"></div>
+                    <div id="chartGauge3" class="echart-box-lg"></div>
+                    <div id="chartGauge4" class="echart-box-lg"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+/* ============================================================
+   工具函数
+   ============================================================ */
+
+/** 实时时钟更新 */
+function updateClock() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const str = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    document.getElementById('updateTime').textContent = str;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+/** 创建 ECharts 实例并自适应 */
+function createChart(domId) {
+    const dom = document.getElementById(domId);
+    if (!dom) return null;
+    const chart = echarts.init(dom, null, { renderer: 'canvas' });
+    // 监听窗口变化自适应
+    window.addEventListener('resize', () => chart.resize());
+    return chart;
+}
+
+/* ============================================================
+   1. AI智能排程 - 双折线面积图
+   ============================================================ */
+(function initScheduleChart() {
+    const chart = createChart('chartSchedule');
+    if (!chart) return;
+
+    const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+    const planned = [10, 18, 28, 38, 48, 56, 64, 72, 80, 88, 94, 100];
+    const actual  = [8, 15, 24, 32, 42, 50, 58, 65, 72, 78, 84, 90];
+
+    chart.setOption({
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(10,15,26,0.9)',
+            borderColor: 'rgba(0,212,255,0.3)',
+            textStyle: { color: '#fff', fontSize: 12 }
+        },
+        legend: {
+            top: 0, right: 0,
+            textStyle: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
+            data: ['计划进度', '实际进度']
+        },
+        grid: { top: 35, right: 15, bottom: 25, left: 40 },
+        xAxis: {
+            type: 'category', data: months, boundaryGap: false,
+            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } },
+            axisLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10 }
+        },
+        yAxis: {
+            type: 'value', max: 100,
+            axisLine: { show: false },
+            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } },
+            axisLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, formatter: '{value}%' }
+        },
+        series: [
+            {
+                name: '计划进度', type: 'line', smooth: true,
+                data: planned,
+                lineStyle: { color: '#00d4ff', width: 2 },
+                itemStyle: { color: '#00d4ff' },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(0,212,255,0.35)' },
+                        { offset: 1, color: 'rgba(0,212,255,0.02)' }
+                    ])
+                }
+            },
+            {
+                name: '实际进度', type: 'line', smooth: true,
+                data: actual,
+                lineStyle: { color: '#ff9f43', width: 2 },
+                itemStyle: { color: '#ff9f43' },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(255,159,67,0.3)' },
+                        { offset: 1, color: 'rgba(255,159,67,0.02)' }
+                    ])
+                }
+            }
+        ]
+    });
+})();
+
+/* ============================================================
+   2. 内部成本 - 横向柱状图
+   ============================================================ */
+(function initCostChart() {
+    const chart = createChart('chartCost');
+    if (!chart) return;
+
+    const categories = ['其他成本', '物料成本', '人力成本', '设备成本'];
+    const values = [25, 45, 65, 80];
+    const colors = ['#a855f7', '#ff9f43', '#00d4ff', '#00ff88'];
+
+    chart.setOption({
+        tooltip: {
+            trigger: 'axis', axisPointer: { type: 'shadow' },
+            backgroundColor: 'rgba(10,15,26,0.9)',
+            borderColor: 'rgba(0,212,255,0.3)',
+            textStyle: { color: '#fff', fontSize: 12 }
+        },
+        grid: { top: 10, right: 50, bottom: 10, left: 70 },
+        xAxis: {
+            type: 'value', max: 100,
+            axisLine: { show: false },
+            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } },
+            axisLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, formatter: '{value}%' }
+        },
+        yAxis: {
+            type: 'category', data: categories,
+            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } },
+            axisLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11 }
+        },
+        series: [{
+            type: 'bar', barWidth: 14,
+            data: values.map((v, i) => ({
+                value: v,
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: colors[i] + '33' },
+                        { offset: 1, color: colors[i] }
+                    ]),
+                    borderRadius: [0, 4, 4, 0]
+                }
+            })),
+            label: {
+                show: true, position: 'right',
+                color: 'rgba(255,255,255,0.8)', fontSize: 11,
+                formatter: '{c}%'
+            }
+        }]
+    });
+})();
+
+/* ============================================================
+   3. 三个环形图（人力/物料/设备占比）
+   ============================================================ */
+function createRingChart(domId, name, value, color) {
+    const chart = createChart(domId);
+    if (!chart) return;
+
+    chart.setOption({
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: 'rgba(10,15,26,0.9)',
+            borderColor: 'rgba(0,212,255,0.3)',
+            textStyle: { color: '#fff' }
+        },
+        series: [{
+            type: 'pie', radius: ['55%', '75%'],
+            center: ['50%', '50%'],
+            label: {
+                show: true, position: 'center',
+                formatter: `{d}%`,
+                color: '#fff', fontSize: 14, fontWeight: 'bold'
+            },
+            data: [
+                { value: value, name: name, itemStyle: { color: color } },
+                { value: 100 - value, name: '剩余', itemStyle: { color: 'rgba(255,255,255,0.06)' } }
+            ],
+            emphasis: { scale: true, scaleSize: 5 }
+        }]
+    });
+}
+createRingChart('chartRing1', '人力', 38, '#00d4ff');
+createRingChart('chartRing2', '物料', 28, '#ff9f43');
+createRingChart('chartRing3', '设备', 22, '#00ff88');
+
+/* ============================================================
+   4. 分项业务实施 - 分组柱状图
+   ============================================================ */
+(function initBusinessChart() {
+    const chart = createChart('chartBusiness');
+    if (!chart) return;
+
+    const modules = ['用户管理', '数据分析', '报表系统', 'API服务', '数据迁移', '安全系统'];
+    const software = [100, 90, 75, 55, 20, 40];
+    const hardware = [85, 70, 60, 45, 30, 50];
+    const integration = [60, 50, 40, 30, 15, 25];
+
+    chart.setOption({
+        tooltip: {
+            trigger: 'axis', axisPointer: { type: 'shadow' },
+            backgroundColor: 'rgba(10,15,26,0.9)',
+            borderColor: 'rgba(0,212,255,0.3)',
+            textStyle: { color: '#fff', fontSize: 12 }
+        },
+        legend: {
+            top: 0, right: 0,
+            textStyle: { color: 'rgba(255,255,255,0.7)', fontSize: 10 },
+            data: ['软件研发', '硬件实施', '集成联调']
+        },
+        grid: { top: 35, right: 10, bottom: 25, left: 65 },
+        xAxis: {
+            type: 'value', max: 100,
+            axisLine: { show: false },
+            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } },
+            axisLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10, formatter: '{value}%' }
+        },
+        yAxis: {
+            type: 'category', data: modules,
+            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } },
+            axisLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 10 }
+        },
+        series: [
+            {
+                name: '软件研发', type: 'bar', barWidth: 8,
+                data: software,
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: 'rgba(0,212,255,0.3)' },
+                        { offset: 1, color: '#00d4ff' }
+                    ]),
+                    borderRadius: [0, 3, 3, 0]
+                }
+            },
+            {
+                name: '硬件实施', type: 'bar', barWidth: 8,
+                data: hardware,
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: 'rgba(255,159,67,0.3)' },
+                        { offset: 1, color: '#ff9f43' }
+                    ]),
+                    borderRadius: [0, 3, 3, 0]
+                }
+            },
+            {
+                name: '集成联调', type: 'bar', barWidth: 8,
+                data: integration,
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                        { offset: 0, color: 'rgba(168,85,247,0.3)' },
+                        { offset: 1, color: '#a855f7' }
+                    ]),
+                    borderRadius: [0, 3, 3, 0]
+                }
+            }
+        ]
+    });
+})();
+
+/* ============================================================
+   5. 人员班组与任务 - 分组柱状图
+   ============================================================ */
+(function initPersonnelChart() {
+    const chart = createChart('chartPersonnel');
+    if (!chart) return;
+
+    const teams = ['研发组', '实施组', '测试组', '运维组', '设计组'];
+    const completed = [45, 32, 38, 20, 21];
+    const inProgress = [12, 18, 8, 10, 5];
+    const overdue = [2, 5, 1, 3, 0];
+
+    chart.setOption({
+        tooltip: {
+            trigger: 'axis', axisPointer: { type: 'shadow' },
+            backgroundColor: 'rgba(10,15,26,0.9)',
+            borderColor: 'rgba(0,212,255,0.3)',
+            textStyle: { color: '#fff', fontSize: 12 }
+        },
+        legend: {
+            top: 0, right: 0,
+            textStyle: { color: 'rgba(255,255,255,0.7)', fontSize: 10 },
+            data: ['已完成', '进行中', '已逾期']
+        },
+        grid: { top: 35, right: 10, bottom: 25, left: 45 },
+        xAxis: {
+            type: 'category', data: teams,
+            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } },
+            axisLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 10 }
+        },
+        yAxis: {
+            type: 'value',
+            axisLine: { show: false },
+            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } },
+            axisLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10 }
+        },
+        series: [
+            {
+                name: '已完成', type: 'bar', barWidth: 12,
+                data: completed,
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+                        { offset: 0, color: 'rgba(0,255,136,0.2)' },
+                        { offset: 1, color: '#00ff88' }
+                    ]),
+                    borderRadius: [3, 3, 0, 0]
+                }
+            },
+            {
+                name: '进行中', type: 'bar', barWidth: 12,
+                data: inProgress,
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+                        { offset: 0, color: 'rgba(255,159,67,0.2)' },
+                        { offset: 1, color: '#ff9f43' }
+                    ]),
+                    borderRadius: [3, 3, 0, 0]
+                }
+            },
+            {
+                name: '已逾期', type: 'bar', barWidth: 12,
+                data: overdue,
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 1, 0, 0, [
+                        { offset: 0, color: 'rgba(255,77,79,0.2)' },
+                        { offset: 1, color: '#ff4d4f' }
+                    ]),
+                    borderRadius: [3, 3, 0, 0]
+                }
+            }
+        ]
+    });
+})();
+
+/* ============================================================
+   6. 风险雷达图
+   ============================================================ */
+(function initRiskChart() {
+    const chart = createChart('chartRisk');
+    if (!chart) return;
+
+    chart.setOption({
+        tooltip: {
+            backgroundColor: 'rgba(10,15,26,0.9)',
+            borderColor: 'rgba(0,212,255,0.3)',
+            textStyle: { color: '#fff' }
+        },
+        radar: {
+            indicator: [
+                { name: '实施风险', max: 100 },
+                { name: '交付风险', max: 100 },
+                { name: '现场风险', max: 100 },
+                { name: '质量风险', max: 100 },
+                { name: '成本风险', max: 100 },
+                { name: '进度风险', max: 100 }
+            ],
+            shape: 'polygon',
+            splitNumber: 4,
+            axisName: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
+            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+            splitArea: { areaStyle: { color: ['rgba(0,212,255,0.02)', 'rgba(0,212,255,0.04)'] } },
+            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } }
+        },
+        series: [{
+            type: 'radar',
+            data: [
+                {
+                    value: [72, 58, 45, 65, 50, 78],
+                    name: '当前风险',
+                    lineStyle: { color: '#00d4ff', width: 2 },
+                    areaStyle: { color: 'rgba(0,212,255,0.2)' },
+                    itemStyle: { color: '#00d4ff' }
+                },
+                {
+                    value: [80, 70, 60, 75, 65, 85],
+                    name: '预警阈值',
+                    lineStyle: { color: '#ff9f43', width: 2, type: 'dashed' },
+                    areaStyle: { color: 'rgba(255,159,67,0.1)' },
+                    itemStyle: { color: '#ff9f43' }
+                }
+            ]
+        }],
+        legend: {
+            bottom: 0,
+            textStyle: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
+            data: ['当前风险', '预警阈值']
+        }
+    });
+})();
+
+/* ============================================================
+   7. 资源能耗 - 4个半圆仪表盘
+   ============================================================ */
+function createGaugeChart(domId, name, value, color1, color2) {
+    const chart = createChart(domId);
+    if (!chart) return;
+
+    chart.setOption({
+        series: [{
+            type: 'gauge',
+            startAngle: 200,
+            endAngle: -20,
+            min: 0,
+            max: 100,
+            radius: '90%',
+            center: ['50%', '60%'],
+            splitNumber: 5,
+            axisLine: {
+                lineStyle: {
+                    width: 14,
+                    color: [
+                        [value / 100, new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                            { offset: 0, color: color1 },
+                            { offset: 1, color: color2 }
+                        ])],
+                        [1, 'rgba(255,255,255,0.08)']
+                    ]
+                }
+            },
+            pointer: { show: false },
+            axisTick: { show: false },
+            splitLine: { show: false },
+            axisLabel: { show: false },
+            title: {
+                show: true,
+                offsetCenter: [0, '30%'],
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: 12
+            },
+            detail: {
+                valueAnimation: true,
+                offsetCenter: [0, '-5%'],
+                fontSize: 28,
+                fontWeight: 'bold',
+                color: color2,
+                formatter: '{value}%'
+            },
+            data: [{ value: value, name: name }]
+        }]
+    });
+}
+createGaugeChart('chartGauge1', '电力消耗', 25, '#ff9f43', '#ff6b35');
+createGaugeChart('chartGauge2', '网络带宽', 76, '#00d4ff', '#00ff88');
+createGaugeChart('chartGauge3', '存储使用', 22, '#a855f7', '#9333ea');
+createGaugeChart('chartGauge4', '计算资源', 20, '#ff4d4f', '#ff6b6b');
+</script>
+</body>
+</html>
