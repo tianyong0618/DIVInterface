@@ -168,6 +168,48 @@
             height: 100px;
         }
 
+        /* 投资AI分析区域 */
+        .invest-ai-analysis {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: linear-gradient(180deg,
+                rgba(255, 140, 0, 0.1) 0%,
+                rgba(255, 140, 0, 0.02) 100%);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        .invest-ai-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .invest-ai-content {
+            flex: 1;
+        }
+
+        .invest-ai-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ff8c00;
+            margin-bottom: var(--spacing-xs);
+            letter-spacing: 1px;
+        }
+
+        .invest-ai-text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.6;
+        }
+
+        .invest-ai-text strong {
+            color: #ff9f43;
+            font-weight: 700;
+        }
+
         /* ===== 中间列 ===== */
         .center-column {
             display: flex;
@@ -387,6 +429,15 @@
                         <div class="mini-donut-item">
                             <div class="mini-donut-chart" id="donutContract"></div>
                             <div class="donut-label-text">合同执行</div>
+                        </div>
+                    </div>
+                    <!-- AI分析区域 -->
+                    <div class="invest-ai-analysis">
+                        <div class="invest-ai-content">
+                            <div class="invest-ai-title">AI分析</div>
+                            <div class="invest-ai-text">
+                                资金拨付进度<strong>33%</strong>，略低于项目进度<strong>78.5%</strong>，建议加快第三批次拨付审批。
+                            </div>
                         </div>
                     </div>
                 </div>
