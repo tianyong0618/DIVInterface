@@ -946,30 +946,57 @@ window.addEventListener('resize', () => charts.forEach(c => c.resize()));
    ============================================================ */
 (function() {
     const tabs = document.querySelectorAll('.tab-btn');
+    const tabIds = ['software', 'hardware', 'integration'];
     const contents = {
         'software': document.getElementById('tabSoftware'),
         'hardware': document.getElementById('tabHardware'),
         'integration': document.getElementById('tabIntegration')
     };
-
+    
+    let currentIndex = 0;
+    let autoPlayInterval = null;
+    
+    function switchToTab(tabId) {
+        tabs.forEach(b => b.classList.remove('active'));
+        Object.values(contents).forEach(c => { if (c) c.classList.remove('active'); });
+        
+        // 找到对应的tab按钮
+        const targetBtn = document.querySelector(`[data-tab="${tabId}"]`);
+        if (targetBtn) targetBtn.classList.add('active');
+        
+        if (contents[tabId]) {
+            contents[tabId].classList.add('active');
+            // 切换到集成Tab时，初始化雷达图
+            if (tabId === 'integration' && window.initRadarChart) {
+                setTimeout(() => {
+                    window.initRadarChart();
+                }, 50);
+            }
+        }
+    }
+    
+    function autoPlay() {
+        currentIndex = (currentIndex + 1) % tabIds.length;
+        switchToTab(tabIds[currentIndex]);
+    }
+    
+    function startAutoPlay() {
+        if (autoPlayInterval) clearInterval(autoPlayInterval);
+        autoPlayInterval = setInterval(autoPlay, 5000);
+    }
+    
     tabs.forEach(btn => {
         btn.addEventListener('click', function() {
-            tabs.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-
-            Object.values(contents).forEach(c => { if (c) c.classList.remove('active'); });
             const tabId = this.dataset.tab;
-            if (contents[tabId]) {
-                contents[tabId].classList.add('active');
-                // 切换到集成Tab时，初始化雷达图
-                if (tabId === 'integration' && window.initRadarChart) {
-                    setTimeout(() => {
-                        window.initRadarChart();
-                    }, 50);
-                }
-            }
+            currentIndex = tabIds.indexOf(tabId);
+            switchToTab(tabId);
+            // 用户手动切换后，重新开始自动轮播
+            startAutoPlay();
         });
     });
+    
+    // 启动自动轮播
+    startAutoPlay();
 })();
 </script>
 </body>
