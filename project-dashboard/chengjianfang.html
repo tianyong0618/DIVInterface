@@ -985,13 +985,20 @@ window.addEventListener('resize', () => charts.forEach(c => c.resize()));
         autoPlayInterval = setInterval(autoPlay, 5000);
     }
     
+    function stopAutoPlay() {
+        if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        }
+    }
+    
     tabs.forEach(btn => {
         btn.addEventListener('click', function() {
             const tabId = this.dataset.tab;
             currentIndex = tabIds.indexOf(tabId);
             switchToTab(tabId);
-            // 用户手动切换后，重新开始自动轮播
-            startAutoPlay();
+            // 用户手动切换后，停止自动轮播
+            stopAutoPlay();
         });
     });
     
