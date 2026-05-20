@@ -210,6 +210,43 @@
             font-weight: 700;
         }
 
+        /* 资源AI提醒区域 */
+        .resource-ai-reminder {
+            margin-top: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: linear-gradient(180deg,
+                rgba(255, 77, 79, 0.08) 0%,
+                rgba(255, 77, 79, 0.02) 100%);
+            border: 1px solid rgba(255, 77, 79, 0.3);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        .resource-ai-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .resource-ai-content {
+            flex: 1;
+        }
+
+        .resource-ai-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ff4d4f;
+            margin-bottom: var(--spacing-xs);
+            letter-spacing: 1px;
+        }
+
+        .resource-ai-text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.6;
+        }
+
         /* ===== 中间列 ===== */
         .center-column {
             display: flex;
@@ -486,6 +523,16 @@
                 <div class="card">
                     <div class="card-title">资源与人员履约看板</div>
                     <div class="resource-chart-box" id="resourceChart"></div>
+                    <!-- AI提醒区域 -->
+                    <div class="resource-ai-reminder">
+                        <div class="resource-ai-icon">⚠️</div>
+                        <div class="resource-ai-content">
+                            <div class="resource-ai-title">AI提醒</div>
+                            <div class="resource-ai-text">
+                                开发与测试人员配置不足，可能影响软件开发进度，建议尽快补充。
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 右下：资源与人员履约看板2 -->
