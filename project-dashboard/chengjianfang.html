@@ -9,7 +9,22 @@
     <style>
         /* ===== 覆盖标题栏为承建方风格 ===== */
         .header {
-            grid-template-columns: 1fr auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            line-height: 1.2;
+            margin: auto 0;
+            padding: 0;
+        }
+
+        .header-info-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: var(--spacing-xs);
         }
 
         /* ===== 承建方两列布局 ===== */
@@ -339,15 +354,11 @@
         <div class="header-title">
             <h1>“智聘大连”就业服务平台AI可视化项目管理</h1>
         </div>
-        <div class="header-info-left">
+        <div class="header-info-right">
             <div class="countdown-box">
                 <span class="countdown-label">距离竣工</span>
                 <span class="countdown-value">133天</span>
             </div>
-        </div>
-        <div class="header-info-right">
-        </div>
-        <div class="header-info-right">
             <span class="header-info-label" id="updateTime">--</span>
         </div>
     </header>
