@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI项目落地执行作战大屏</title>
+    <title>“智聘大连”就业服务平台AI可视化项目管理</title>
     <link rel="stylesheet" href="css/common.css">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <style>
@@ -337,7 +337,7 @@
     <!-- ========== Header ========== -->
     <header class="header">
         <div class="header-title">
-            <h1>AI项目落地执行作战大屏</h1>
+            <h1>“智聘大连”就业服务平台AI可视化项目管理</h1>
         </div>
         <div class="header-info-left">
             <div class="countdown-box">
@@ -346,18 +346,6 @@
             </div>
         </div>
         <div class="header-info-right">
-            <div class="header-info-item">
-                <span class="header-info-label">甲方单位</span>
-                <span class="header-info-value">某省政务信息中心</span>
-            </div>
-            <div class="header-info-item">
-                <span class="header-info-label">实施阶段</span>
-                <span class="header-info-value">硬件部署 + 软件研发并行</span>
-            </div>
-            <div class="header-info-item">
-                <span class="header-info-label">内部考核</span>
-                <span class="header-info-value" style="color: var(--secondary-color);">85分</span>
-            </div>
         </div>
         <div class="header-info-right">
             <span class="header-info-label" id="updateTime">--</span>
@@ -535,11 +523,13 @@ const WEEKLY_TASKS = [
 ];
 
 const SYSTEM_PROGRESS = [
-    { system: '用户管理', progress: 85 },
-    { system: '权限控制', progress: 90 },
-    { system: '数据分析', progress: 60 },
-    { system: '报表系统', progress: 45 },
-    { system: '接口集成', progress: 70 },
+    { system: '求职招聘平台', progress: 78 },
+    { system: '零工管理系统', progress: 65 },
+    { system: '职业规划系统', progress: 52 },
+    { system: '大数据监测平台', progress: 43 },
+    { system: '创业云服务平台', progress: 35 },
+    { system: '超级个体平台', progress: 28 },
+    { system: '就业数字员工', progress: 18 },
 ];
 
 const SOFTWARE_MODULES = [
@@ -812,7 +802,25 @@ window.addEventListener('resize', () => charts.forEach(c => c.resize()));
     if (!container) return;
 
     container.innerHTML = SYSTEM_PROGRESS.map(d => {
-        const barColor = d.progress >= 60 ? 'cyan' : 'orange';
+        // 根据进度值设置不同颜色：绿色(>=80%)、青色(60-80%)、橙色(40-60%)、红色(<40%)
+        let barColor, statusClass;
+        if (d.progress >= 80) {
+            barColor = 'green';
+            statusClass = 'badge badge-success';
+        } else if (d.progress >= 60) {
+            barColor = 'cyan';
+            statusClass = 'badge badge-default';
+        } else if (d.progress >= 40) {
+            barColor = 'orange';
+            statusClass = 'badge badge-warning';
+        } else {
+            barColor = 'red';
+            statusClass = 'badge badge-destructive';
+        }
+        
+        const warningText = d.progress < 40 ? '<div class="subsystem-warning">⚠️ 进度滞后，需重点关注</div>' : 
+                           d.progress < 60 ? '<div class="subsystem-warning">⚠️ 需加快进度</div>' : '';
+        
         return `
             <div class="subsystem-item">
                 <div class="subsystem-header">
@@ -820,7 +828,7 @@ window.addEventListener('resize', () => charts.forEach(c => c.resize()));
                     <span class="subsystem-progress-text">${d.progress}%</span>
                 </div>
                 <div class="progress-bar"><div class="progress-fill ${barColor}" style="width:${d.progress}%"></div></div>
-                ${d.progress < 60 ? '<div class="subsystem-warning">⚠️ 进度滞后，需加快</div>' : ''}
+                ${warningText}
             </div>
         `;
     }).join('');
